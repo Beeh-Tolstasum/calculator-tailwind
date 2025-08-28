@@ -23,7 +23,7 @@ const buttonsSimple = [
   "=",
 ];
 
-// Планшетный вид для инженерного режима - больше колонок, меньше пустых ячеек
+// Планшетный вид для инженерного режима - разделяем скобки на отдельные кнопки
 const buttonsEngineer = [
   "⇄",
   "Rad",
@@ -32,7 +32,8 @@ const buttonsEngineer = [
   "sin",
   "cos",
   "tan",
-  "()",
+  "(",
+  ")",
   "ln",
   "log",
   "1/x",
@@ -76,6 +77,13 @@ function Calculator() {
       setDisplay((d) => (d === "0" ? "()" : d + "()"));
       return;
     }
+
+    // Обработка отдельных скобок для инженерного режима
+    if (val === "(" || val === ")") {
+      setDisplay((d) => (d === "0" ? val : d + val));
+      return;
+    }
+
     if (val === "⇄") return;
 
     if (val === "+/−") {
