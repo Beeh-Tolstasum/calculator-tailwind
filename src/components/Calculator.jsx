@@ -196,7 +196,7 @@ function Calculator() {
     padding: "24px",
     borderRadius: "16px",
     boxShadow: "0px 0px 20px rgba(0,0,0,0.3)",
-    width: engineerMode ? 460 : 340, // ширина шире для инженера
+    width: engineerMode ? 460 : 340,
     maxWidth: "95vw",
   };
 
@@ -256,6 +256,14 @@ function Calculator() {
     userSelect: "none",
   };
 
+  const clearButtonStyle = {
+    ...buttonStyle,
+    background: "#ff4d4d",
+    color: "#fff",
+    fontWeight: "bold",
+    boxShadow: "2px 2px 8px rgba(255, 0, 0, 0.7)",
+  };
+
   const buttons = engineerMode ? buttonsEngineer : buttonsSimple;
 
   return (
@@ -300,7 +308,11 @@ function Calculator() {
         <div style={gridStyle}>
           {buttons.map((b, i) =>
             b ? (
-              <button key={i} onClick={() => onClick(b)} style={buttonStyle}>
+              <button
+                key={i}
+                onClick={() => onClick(b)}
+                style={b === "C" ? clearButtonStyle : buttonStyle}
+              >
                 {b}
               </button>
             ) : (
