@@ -110,7 +110,6 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display]);
 
-  // Стили из фиолетового калькулятора
   const containerStyle = {
     minHeight: "100vh",
     display: "flex",
@@ -137,8 +136,21 @@ function Calculator() {
     padding: "0 12px",
     fontSize: 28,
     lineHeight: "60px",
-    marginBottom: 16,
+    marginBottom: 8,
     fontFamily: "'Courier New', monospace",
+  };
+
+  const deleteButtonStyle = {
+    background: "#ffb3b3",
+    border: "none",
+    borderRadius: 12,
+    height: 40,
+    width: 60,
+    fontSize: 20,
+    fontWeight: "bold",
+    cursor: "pointer",
+    float: "right",
+    marginBottom: 10,
   };
 
   const gridStyle = {
@@ -162,7 +174,26 @@ function Calculator() {
     <div style={containerStyle}>
       <div style={calcStyle}>
         <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
+
+        {/* Display */}
         <div style={displayStyle}>{display}</div>
+
+        {/* Delete one symbol */}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button
+            style={deleteButtonStyle}
+            onClick={() =>
+              setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
+            }
+          >
+            ⌫
+          </button>
+        </div>
+
+        {/* Line */}
+        <hr style={{ border: "1px solid #aaa", marginBottom: 16 }} />
+
+        {/* Buttons */}
         <div style={gridStyle}>
           {buttons.map((b, i) => (
             <button key={i} onClick={() => onClick(b)} style={buttonStyle}>
