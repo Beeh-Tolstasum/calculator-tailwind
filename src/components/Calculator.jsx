@@ -110,7 +110,7 @@ function Calculator() {
     if (val === "=") {
       // Специальная проверка на "8977"
       if (display === "8977") {
-        setDisplay("Hello Beeh Tolstasum");
+        setDisplay("Beeh👋🏻😁");
         return;
       }
 
