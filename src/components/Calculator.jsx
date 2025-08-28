@@ -17,7 +17,7 @@ const buttons = [
   ".",
   "=",
   "+",
-  "e", // добавил e в кнопки
+  "e",
 ];
 
 function Calculator() {
@@ -25,8 +25,7 @@ function Calculator() {
   const [history, setHistory] = useState("");
   const [showingHello, setShowingHello] = useState(false);
 
-  // Разрешённые символы: цифры, операторы, точка и e
-  const isValidChar = (ch) => /[0-9+\-*/.e]/.test(ch);
+  const isValidChar = (ch) => /^[0-9+\-*/.e]$/.test(ch);
 
   const backspace = () => {
     if (showingHello) {
@@ -34,10 +33,7 @@ function Calculator() {
       setShowingHello(false);
       return;
     }
-    setDisplay((d) => {
-      if (d.length <= 1) return "0";
-      return d.slice(0, -1);
-    });
+    setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
   };
 
   const onClick = (val) => {
@@ -48,9 +44,7 @@ function Calculator() {
         setHistory("");
         return;
       }
-      if (val === "=") {
-        return;
-      }
+      if (val === "=") return;
       if (isValidChar(val)) {
         setDisplay(val === "0" ? "0" : val);
         setShowingHello(false);
@@ -75,15 +69,12 @@ function Calculator() {
         setShowingHello(true);
         return;
       }
-
       try {
         if (!/[0-9e]/.test(display)) {
           setDisplay("0");
           return;
         }
-        // Заменяем 'e' на Math.E для вычисления
         const expression = display.replace(/e/g, `(${Math.E})`);
-
         const result = Function('"use strict";return (' + expression + ")")();
         setHistory(display + " = " + result);
         setDisplay(String(result));
@@ -93,54 +84,56 @@ function Calculator() {
       return;
     }
 
-    // Проверка на двойные операторы (в том числе точка и e)
     if (/[+\-*/]/.test(val)) {
       setDisplay((d) => {
         const last = d.slice(-1);
-        if (/[+\-*/]/.test(last)) {
-          return d.slice(0, -1) + val;
-        }
+        if (/[+\-*/]/.test(last)) return d.slice(0, -1) + val;
         return d + val;
       });
       return;
     }
 
-    // Проверка точки: нельзя вводить две точки подряд в числе
     if (val === ".") {
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
-      if (lastPart.includes(".")) {
-        // уже есть точка в текущем числе
-        return;
-      }
+      if (lastPart.includes(".")) return;
       setDisplay((d) => (d === "0" ? val : d + val));
       return;
     }
 
-    // Проверка e: можно только после числа или оператора, но не подряд
     if (val === "e") {
       const last = display.slice(-1);
-      if (!/[0-9]/.test(last)) {
-        // запрещаем вставлять e после e, оператора или точки
-        return;
-      }
+      if (!/[0-9]/.test(last)) return;
       setDisplay((d) => d + val);
       return;
     }
 
-    // Ввод цифр
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
   useEffect(() => {
     const handler = (e) => {
       const k = e.key;
-      if (isValidChar(k)) onClick(k);
-      if (k === "Enter") onClick("=");
-      if (k === "Backspace") backspace();
+      if (k.length === 1 && isValidChar(k)) {
+        e.preventDefault();
+        onClick(k);
+        return;
+      }
+      if (k === "Enter") {
+        e.preventDefault();
+        onClick("=");
+        return;
+      }
+      if (k === "Backspace") {
+        e.preventDefault();
+        backspace();
+        return;
+      }
       if (k === "Escape") {
+        e.preventDefault();
         setDisplay("0");
         setShowingHello(false);
+        return;
       }
     };
     window.addEventListener("keydown", handler);
@@ -149,14 +142,11 @@ function Calculator() {
 
   const glassButtonStyle = {
     background: "rgba(255, 255, 255, 0.25)",
-    boxShadow: `
-      4px 4px 8px rgba(0,0,0,0.2), 
-      -4px -4px 8px rgba(255,255,255,0.7)
-    `,
+    boxShadow: `4px 4px 8px rgba(0,0,0,0.2), -4px -4px 8px rgba(255,255,255,0.7)`,
     backdropFilter: "blur(10px)",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.3)",
-    transform: "perspective(500px) rotateY(-10deg) translateY(-2px)", // по твоему предыдущему комменту — влево и вверх
+    transform: "perspective(500px) rotateY(-10deg) translateY(-2px)",
     transition: "all 0.3s ease",
     color: "black",
     fontWeight: "600",
@@ -169,7 +159,6 @@ function Calculator() {
     background: "linear-gradient(135deg, #f43f5e, #ec4899)",
     color: "white",
     border: "1px solid rgba(255,255,255,0.6)",
-    transform: "perspective(500px) rotateY(-10deg) translateY(-2px)",
     fontWeight: "700",
     height: "48px",
   };
@@ -198,18 +187,18 @@ function Calculator() {
               key={b}
               onClick={() => onClick(b)}
               style={glassButtonStyle}
-              onMouseDown={(e) => {
-                e.currentTarget.style.transform =
-                  "perspective(500px) rotateY(-10deg) translateY(0)";
-              }}
-              onMouseUp={(e) => {
-                e.currentTarget.style.transform =
-                  "perspective(500px) rotateY(-10deg) translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform =
-                  "perspective(500px) rotateY(-10deg) translateY(-2px)";
-              }}
+              onMouseDown={(e) =>
+                (e.currentTarget.style.transform =
+                  "perspective(500px) rotateY(-10deg) translateY(0)")
+              }
+              onMouseUp={(e) =>
+                (e.currentTarget.style.transform =
+                  "perspective(500px) rotateY(-10deg) translateY(-2px)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform =
+                  "perspective(500px) rotateY(-10deg) translateY(-2px)")
+              }
             >
               {b}
             </button>
@@ -218,18 +207,18 @@ function Calculator() {
             onClick={() => onClick("Очистить")}
             style={clearButtonStyle}
             className="col-span-4"
-            onMouseDown={(e) => {
-              e.currentTarget.style.transform =
-                "perspective(500px) rotateY(-10deg) translateY(0)";
-            }}
-            onMouseUp={(e) => {
-              e.currentTarget.style.transform =
-                "perspective(500px) rotateY(-10deg) translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform =
-                "perspective(500px) rotateY(-10deg) translateY(-2px)";
-            }}
+            onMouseDown={(e) =>
+              (e.currentTarget.style.transform =
+                "perspective(500px) rotateY(-10deg) translateY(0)")
+            }
+            onMouseUp={(e) =>
+              (e.currentTarget.style.transform =
+                "perspective(500px) rotateY(-10deg) translateY(-2px)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.transform =
+                "perspective(500px) rotateY(-10deg) translateY(-2px)")
+            }
           >
             Очистить
           </button>
