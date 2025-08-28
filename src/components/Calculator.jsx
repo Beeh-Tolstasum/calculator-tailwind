@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-// Кнопки для обычного режима — теперь с одной кнопкой "()"
 const buttonsSimple = [
   "C",
   "()",
@@ -24,7 +23,7 @@ const buttonsSimple = [
   "=",
 ];
 
-// Инженерный режим — с цифрами и скобками отдельно
+// В инженерном режиме добавлены отдельные кнопки "(" и ")"
 const buttonsEngineer = [
   "⇄",
   "Rad",
@@ -48,29 +47,22 @@ const buttonsEngineer = [
   "e",
   "×",
   "+/−",
-  "7",
-  "8",
-  "9",
-  "+",
-  "4",
-  "5",
-  "6",
-  "−",
-  "1",
-  "2",
-  "3",
-  "=",
   "0",
   ".",
+  "+",
+  "−",
+  "=",
 ];
 
 function Calculator() {
   const [display, setDisplay] = useState("0");
   const [engineerMode, setEngineerMode] = useState(false);
-  // Для обычного режима: счётчик скобок, чтобы по очереди вставлять ( и )
-  const [simpleBracketToggle, setSimpleBracketToggle] = useState(true); // true = вставить '('
+  const [simpleBracketToggle, setSimpleBracketToggle] = useState(true); // для простых скобок ()
 
-  const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
+  const isValidChar = (ch) =>
+    /^[0-9+\-*/().e%]$/.test(ch) ||
+    ch === "E" ||
+    ["÷", "×", "−", "π"].includes(ch);
 
   const normalizeOperator = (op) => {
     if (op === "÷") return "/";
@@ -84,7 +76,7 @@ function Calculator() {
 
     if (val === "C") {
       setDisplay("0");
-      setSimpleBracketToggle(true); // сбрасываем счётчик скобок
+      setSimpleBracketToggle(true);
       return;
     }
 
@@ -99,33 +91,44 @@ function Calculator() {
 
     if (val === "⇄") return;
 
-    if (
-      !isValidChar(val) &&
-      val !== "=" &&
-      val !== "," &&
-      val !== "Rad" &&
-      val !== "sin" &&
-      val !== "cos" &&
-      val !== "tan" &&
-      val !== "ln" &&
-      val !== "log" &&
-      val !== "1/x" &&
-      val !== "eˣ" &&
-      val !== "x²" &&
-      val !== "xʸ" &&
-      val !== "|x|" &&
-      val !== "π" &&
-      val !== "e"
-    )
+    // Обработка простой скобки в простом режиме — вставляем поочерёдно ( или )
+    if (!engineerMode && val === "()") {
+      setDisplay((d) => {
+        if (simpleBracketToggle) {
+          setSimpleBracketToggle(false);
+          return d === "0" ? "(" : d + "(";
+        } else {
+          setSimpleBracketToggle(true);
+          return d + ")";
+        }
+      });
       return;
+    }
+
+    // В инженерном режиме отдельные кнопки "(" и ")"
+    if (engineerMode && (val === "(" || val === ")")) {
+      setDisplay((d) => (d === "0" ? val : d + val));
+      return;
+    }
+
+    // Операторы: +, −, ×, ÷ и их нормализация
+    if (["+", "−", "×", "÷", "-", "*", "/"].includes(val)) {
+      setDisplay((d) => {
+        const last = d.slice(-1);
+        const op = normalizeOperator(val);
+        if (["+", "-", "*", "/"].includes(last)) {
+          return d.slice(0, -1) + op;
+        }
+        return d + op;
+      });
+      return;
+    }
 
     if (val === "=") {
-      // Специальная проверка на "8977"
       if (display === "8977") {
         setDisplay("Beeh👋🏻😁");
         return;
       }
-
       try {
         let expr = display
           .replace(/÷/g, "/")
@@ -135,10 +138,6 @@ function Calculator() {
           .replace(/π/g, String(Math.PI))
           .replace(/e/g, String(Math.E));
 
-        if (!/[0-9+\-*/().]/.test(expr)) {
-          setDisplay("0");
-          return;
-        }
         // eslint-disable-next-line no-eval
         const result = eval(expr);
         setDisplay(String(result));
@@ -148,16 +147,7 @@ function Calculator() {
       return;
     }
 
-    if (/[+\-*/]/.test(val)) {
-      setDisplay((d) => {
-        const last = d.slice(-1);
-        const op = normalizeOperator(val);
-        if (/[+\-*/]/.test(last)) return d.slice(0, -1) + op;
-        return d + op;
-      });
-      return;
-    }
-
+    // Точка или запятая
     if (val === "." || val === ",") {
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
@@ -166,6 +156,7 @@ function Calculator() {
       return;
     }
 
+    // В инженерном режиме π и e вставляются как числа
     if (engineerMode) {
       if (val === "π") {
         setDisplay((d) => (d === "0" ? String(Math.PI) : d + String(Math.PI)));
@@ -177,24 +168,7 @@ function Calculator() {
       }
     }
 
-    // В обычном режиме обработка кнопки "()"
-    if (!engineerMode && val === "()") {
-      setDisplay((d) => {
-        if (d === "0") {
-          setSimpleBracketToggle(false); // Следующий раз вставим )
-          return "(";
-        }
-        if (simpleBracketToggle) {
-          setSimpleBracketToggle(false);
-          return d + "(";
-        } else {
-          setSimpleBracketToggle(true);
-          return d + ")";
-        }
-      });
-      return;
-    }
-
+    // По умолчанию добавляем цифры и прочие символы
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -220,7 +194,7 @@ function Calculator() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [display, engineerMode, simpleBracketToggle]);
+  }, [display, engineerMode]);
 
   // Стили
   const containerStyle = {
@@ -238,7 +212,7 @@ function Calculator() {
     padding: "24px",
     borderRadius: "16px",
     boxShadow: "0px 0px 20px rgba(0,0,0,0.3)",
-    width: engineerMode ? 520 : 340,
+    width: engineerMode ? 460 : 340,
     maxWidth: "95vw",
   };
 
@@ -254,7 +228,7 @@ function Calculator() {
     marginBottom: 8,
     fontFamily: "'Courier New', monospace",
     flexGrow: 1,
-    overflowX: "hidden",
+    overflowX: "auto",
   };
 
   const deleteButtonStyle = {
@@ -328,7 +302,8 @@ function Calculator() {
             style={toggleModeButtonStyle}
             onClick={() => {
               setEngineerMode((v) => !v);
-              setSimpleBracketToggle(true); // сбрасываем скобки при переключении
+              setSimpleBracketToggle(true);
+              setDisplay("0");
             }}
             aria-label="Переключить режим"
           >
@@ -337,10 +312,9 @@ function Calculator() {
 
           <button
             style={{ ...deleteButtonStyle, marginLeft: 8 }}
-            onClick={() => {
-              setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
-              setSimpleBracketToggle(true); // Можно сбрасывать тут или не сбрасывать
-            }}
+            onClick={() =>
+              setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
+            }
             aria-label="Удалить последний символ"
           >
             ⌫
