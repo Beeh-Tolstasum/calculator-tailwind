@@ -23,43 +23,40 @@ const buttonsSimple = [
   "=",
 ];
 
-// Планшетный вид для инженерного режима - больше колонок, меньше пустых ячеек
-const buttonsEngineer = [
-  "⇄",
-  "Rad",
-  "√",
-  "C",
-  "sin",
-  "cos",
-  "tan",
-  "()",
-  "ln",
-  "log",
-  "1/x",
-  "%",
-  "eˣ",
-  "x²",
-  "xʸ",
-  "÷",
-  "|x|",
-  "π",
-  "e",
-  "×",
-  "+/−",
-  "0",
-  ".",
-  "+",
-  "−",
-  "=",
-];
-
 function Calculator() {
   const [display, setDisplay] = useState("0");
-  const [engineerMode, setEngineerMode] = useState(false);
   const inputRef = useRef(null);
 
-  const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
+  // Фильтрация допустимых символов с клавиатуры
+  const allowedKeys = new Set([
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "+",
+    "-",
+    "*",
+    "/",
+    "(",
+    ")",
+    ".",
+    "%",
+    "Backspace",
+    "Delete",
+    "ArrowLeft",
+    "ArrowRight",
+    "Enter",
+    "Escape",
+    "Tab",
+  ]);
 
+  // Перевод операторов в js-формат
   const normalizeOperator = (op) => {
     if (op === "÷") return "/";
     if (op === "×") return "*";
@@ -86,6 +83,7 @@ function Calculator() {
     }, 0);
   };
 
+  // Обработка кликов по кнопкам
   const onClick = (val) => {
     if (!val) return;
     if (val === "C") {
@@ -96,49 +94,19 @@ function Calculator() {
       insertAtCursor("()");
       return;
     }
-    if (val === "⇄") return;
-
     if (val === "+/−") {
       if (display === "0") return;
       if (display.startsWith("-")) setDisplay(display.slice(1));
       else setDisplay("-" + display);
       return;
     }
-
-    if (
-      !isValidChar(val) &&
-      val !== "=" &&
-      val !== "," &&
-      val !== "Rad" &&
-      val !== "sin" &&
-      val !== "cos" &&
-      val !== "tan" &&
-      val !== "ln" &&
-      val !== "log" &&
-      val !== "1/x" &&
-      val !== "eˣ" &&
-      val !== "x²" &&
-      val !== "xʸ" &&
-      val !== "|x|" &&
-      val !== "π" &&
-      val !== "e"
-    )
-      return;
-
     if (val === "=") {
       try {
         let expr = display
           .replace(/÷/g, "/")
           .replace(/×/g, "*")
           .replace(/−/g, "-")
-          .replace(/,/g, ".")
-          .replace(/π/g, String(Math.PI))
-          .replace(/e/g, String(Math.E));
-
-        if (!/[0-9+\-*/().]/.test(expr)) {
-          setDisplay("0");
-          return;
-        }
+          .replace(/,/g, ".");
         // eslint-disable-next-line no-eval
         const result = eval(expr);
         setDisplay(String(result));
@@ -148,10 +116,10 @@ function Calculator() {
       return;
     }
 
-    if (/[+\-*/]/.test(val)) {
+    if (["+", "-", "×", "÷", "−"].includes(val)) {
       const last = display.slice(-1);
       const op = normalizeOperator(val);
-      if (/[+\-*/]/.test(last)) {
+      if (["+", "-", "*", "/"].includes(last)) {
         setDisplay(display.slice(0, -1) + op);
       } else {
         insertAtCursor(op);
@@ -159,79 +127,78 @@ function Calculator() {
       return;
     }
 
-    if (val === "." || val === ",") {
-      const parts = display.split(/[+\-*/]/);
+    if (val === ".") {
+      // Проверяем есть ли уже точка в текущем числе
+      const parts = display.split(/[\+\-\*\/]/);
       const lastPart = parts[parts.length - 1];
-      if (lastPart.includes(".") || lastPart.includes(",")) return;
+      if (lastPart.includes(".")) return;
       insertAtCursor(".");
       return;
     }
 
-    if (engineerMode) {
-      if (val === "π") {
-        insertAtCursor(String(Math.PI));
-        return;
-      }
-      if (val === "e") {
-        insertAtCursor(String(Math.E));
-        return;
-      }
-    }
-
+    // Все остальные числа и символы
     insertAtCursor(val);
   };
 
+  // Обработка событий клавиатуры
   useEffect(() => {
-    const handler = (e) => {
-      const k = e.key;
-      if (k.length === 1 && isValidChar(k)) {
+    const onKeyDown = (e) => {
+      // Разрешаем только нужные клавиши
+      if (!allowedKeys.has(e.key)) {
         e.preventDefault();
-        onClick(k);
         return;
       }
-      if (k === "Enter") {
+      if (e.key === "Enter") {
         e.preventDefault();
         onClick("=");
         return;
       }
-      if (k === "Escape") {
+      if (e.key === "Escape") {
         e.preventDefault();
         setDisplay("0");
         return;
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [display, engineerMode]);
 
-  // Кнопка удаления символа слева от курсора или выделения
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [display]);
+
+  // Обработка изменения input (вставка с клавиатуры, мыши и т.д.)
+  const onChange = (e) => {
+    // Фильтруем ввод
+    const filtered = e.target.value
+      .split("")
+      .filter((ch) => "0123456789+-*/().%".includes(ch))
+      .join("");
+    setDisplay(filtered || "0");
+  };
+
+  // Удаление символа слева от курсора
   const onDelete = () => {
-    if (inputRef.current) {
-      const el = inputRef.current;
-      const start = el.selectionStart;
-      const end = el.selectionEnd;
+    const el = inputRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
 
-      if (start === end && start > 0) {
-        const newValue = display.slice(0, start - 1) + display.slice(end);
-        setDisplay(newValue || "0");
-
-        setTimeout(() => {
-          el.selectionStart = el.selectionEnd = start - 1;
-          el.focus();
-        }, 0);
-      } else if (start !== end) {
-        const newValue = display.slice(0, start) + display.slice(end);
-        setDisplay(newValue || "0");
-
-        setTimeout(() => {
-          el.selectionStart = el.selectionEnd = start;
-          el.focus();
-        }, 0);
-      }
+    if (start === end && start > 0) {
+      const newValue = display.slice(0, start - 1) + display.slice(end);
+      setDisplay(newValue || "0");
+      setTimeout(() => {
+        el.selectionStart = el.selectionEnd = start - 1;
+        el.focus();
+      }, 0);
+    } else if (start !== end) {
+      const newValue = display.slice(0, start) + display.slice(end);
+      setDisplay(newValue || "0");
+      setTimeout(() => {
+        el.selectionStart = el.selectionEnd = start;
+        el.focus();
+      }, 0);
     }
   };
 
-  // Стили
+  // Стили (упрощены, чтобы не было больших теней)
   const containerStyle = {
     minHeight: "100vh",
     display: "flex",
@@ -246,8 +213,7 @@ function Calculator() {
     background: "#b18eff",
     padding: "24px",
     borderRadius: "16px",
-    boxShadow: "0px 0px 20px rgba(0,0,0,0.3)",
-    width: engineerMode ? 460 : 340,
+    width: 340,
     maxWidth: "95vw",
   };
 
@@ -262,8 +228,6 @@ function Calculator() {
     lineHeight: "60px",
     marginBottom: 8,
     fontFamily: "'Courier New', monospace",
-    flexGrow: 1,
-    overflowX: "auto",
     border: "none",
     outline: "none",
   };
@@ -280,7 +244,7 @@ function Calculator() {
   };
 
   const toggleModeButtonStyle = {
-    background: engineerMode ? "#ffb347" : "#ffe066",
+    background: "#ffe066",
     border: "none",
     borderRadius: 12,
     height: 40,
@@ -293,18 +257,17 @@ function Calculator() {
 
   const gridStyle = {
     display: "grid",
-    gridTemplateColumns: engineerMode ? "repeat(8, 1fr)" : "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(4, 1fr)",
     gap: 10,
   };
 
   const buttonStyle = {
-    background: "#d1b3ff",
+    background: "#c8aaff",
     border: "none",
     borderRadius: 12,
     height: 50,
     fontSize: 18,
     fontWeight: 600,
-    boxShadow: "2px 2px 6px rgba(0,0,0,0.2)",
     cursor: "pointer",
     userSelect: "none",
   };
@@ -314,28 +277,27 @@ function Calculator() {
     background: "#ff4d4d",
     color: "#fff",
     fontWeight: "bold",
-    boxShadow: "2px 2px 8px rgba(255, 0, 0, 0.7)",
   };
 
-  const buttons = engineerMode ? buttonsEngineer : buttonsSimple;
+  const buttons = buttonsSimple;
 
   return (
     <div style={containerStyle}>
       <div style={calcStyle}>
         <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
 
-        {/* Дисплей — input */}
+        {/* Дисплей - input */}
         <input
           ref={inputRef}
           type="text"
           value={display}
-          onChange={(e) => setDisplay(e.target.value)}
+          onChange={onChange}
           style={displayStyle}
           spellCheck={false}
           autoComplete="off"
         />
 
-        {/* Кнопки переключения режима и удаления */}
+        {/* Кнопки удаления и переключения (только удаление пока) */}
         <div
           style={{
             display: "flex",
@@ -344,15 +306,7 @@ function Calculator() {
           }}
         >
           <button
-            style={toggleModeButtonStyle}
-            onClick={() => setEngineerMode((v) => !v)}
-            aria-label="Переключить режим"
-          >
-            {engineerMode ? "Инж" : "Обч"}
-          </button>
-
-          <button
-            style={{ ...deleteButtonStyle, marginLeft: 8 }}
+            style={deleteButtonStyle}
             onClick={onDelete}
             aria-label="Удалить последний символ"
           >
