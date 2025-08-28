@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const buttonsSimple = [
   "C",
@@ -56,6 +56,7 @@ const buttonsEngineer = [
 function Calculator() {
   const [display, setDisplay] = useState("0");
   const [engineerMode, setEngineerMode] = useState(false);
+  const inputRef = useRef(null);
 
   const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
 
@@ -66,6 +67,25 @@ function Calculator() {
     return op;
   };
 
+  // Вставка символа в позицию курсора
+  const insertAtCursor = (val) => {
+    const el = inputRef.current;
+    if (!el) return;
+
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const current = display === "0" ? "" : display;
+
+    const newValue = current.substring(0, start) + val + current.substring(end);
+    setDisplay(newValue || "0");
+
+    // Установим курсор после вставленного символа
+    setTimeout(() => {
+      el.selectionStart = el.selectionEnd = start + val.length;
+      el.focus();
+    }, 0);
+  };
+
   const onClick = (val) => {
     if (!val) return;
     if (val === "C") {
@@ -73,17 +93,15 @@ function Calculator() {
       return;
     }
     if (val === "()") {
-      setDisplay((d) => (d === "0" ? "()" : d + "()"));
+      insertAtCursor("()");
       return;
     }
     if (val === "⇄") return;
 
     if (val === "+/−") {
-      setDisplay((d) => {
-        if (d === "0") return d;
-        if (d.startsWith("-")) return d.slice(1);
-        return "-" + d;
-      });
+      if (display === "0") return;
+      if (display.startsWith("-")) setDisplay(display.slice(1));
+      else setDisplay("-" + display);
       return;
     }
 
@@ -131,12 +149,13 @@ function Calculator() {
     }
 
     if (/[+\-*/]/.test(val)) {
-      setDisplay((d) => {
-        const last = d.slice(-1);
-        const op = normalizeOperator(val);
-        if (/[+\-*/]/.test(last)) return d.slice(0, -1) + op;
-        return d + op;
-      });
+      const last = display.slice(-1);
+      const op = normalizeOperator(val);
+      if (/[+\-*/]/.test(last)) {
+        setDisplay(display.slice(0, -1) + op);
+      } else {
+        insertAtCursor(op);
+      }
       return;
     }
 
@@ -144,22 +163,22 @@ function Calculator() {
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
       if (lastPart.includes(".") || lastPart.includes(",")) return;
-      setDisplay((d) => (d === "0" ? "0." : d + "."));
+      insertAtCursor(".");
       return;
     }
 
     if (engineerMode) {
       if (val === "π") {
-        setDisplay((d) => (d === "0" ? String(Math.PI) : d + String(Math.PI)));
+        insertAtCursor(String(Math.PI));
         return;
       }
       if (val === "e") {
-        setDisplay((d) => (d === "0" ? String(Math.E) : d + String(Math.E)));
+        insertAtCursor(String(Math.E));
         return;
       }
     }
 
-    setDisplay((d) => (d === "0" ? val : d + val));
+    insertAtCursor(val);
   };
 
   useEffect(() => {
@@ -184,6 +203,33 @@ function Calculator() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [display, engineerMode]);
+
+  // Кнопка удаления символа слева от курсора или выделения
+  const onDelete = () => {
+    if (inputRef.current) {
+      const el = inputRef.current;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+
+      if (start === end && start > 0) {
+        const newValue = display.slice(0, start - 1) + display.slice(end);
+        setDisplay(newValue || "0");
+
+        setTimeout(() => {
+          el.selectionStart = el.selectionEnd = start - 1;
+          el.focus();
+        }, 0);
+      } else if (start !== end) {
+        const newValue = display.slice(0, start) + display.slice(end);
+        setDisplay(newValue || "0");
+
+        setTimeout(() => {
+          el.selectionStart = el.selectionEnd = start;
+          el.focus();
+        }, 0);
+      }
+    }
+  };
 
   // Стили
   const containerStyle = {
@@ -218,6 +264,8 @@ function Calculator() {
     fontFamily: "'Courier New', monospace",
     flexGrow: 1,
     overflowX: "auto",
+    border: "none",
+    outline: "none",
   };
 
   const deleteButtonStyle = {
@@ -276,8 +324,16 @@ function Calculator() {
       <div style={calcStyle}>
         <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
 
-        {/* Дисплей */}
-        <div style={displayStyle}>{display}</div>
+        {/* Дисплей — input */}
+        <input
+          ref={inputRef}
+          type="text"
+          value={display}
+          onChange={(e) => setDisplay(e.target.value)}
+          style={displayStyle}
+          spellCheck={false}
+          autoComplete="off"
+        />
 
         {/* Кнопки переключения режима и удаления */}
         <div
@@ -297,19 +353,15 @@ function Calculator() {
 
           <button
             style={{ ...deleteButtonStyle, marginLeft: 8 }}
-            onClick={() =>
-              setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
-            }
+            onClick={onDelete}
             aria-label="Удалить последний символ"
           >
             ⌫
           </button>
         </div>
 
-        {/* Разделительная линия */}
         <hr style={{ border: "2px solid #000", margin: "16px 0" }} />
 
-        {/* Сетка кнопок */}
         <div style={gridStyle}>
           {buttons.map((b, i) =>
             b ? (
