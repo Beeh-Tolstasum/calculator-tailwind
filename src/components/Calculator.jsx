@@ -23,6 +23,7 @@ const buttonsSimple = [
   "=",
 ];
 
+// Планшетный вид для инженерного режима - больше колонок, меньше пустых ячеек
 const buttonsEngineer = [
   "⇄",
   "Rad",
@@ -44,17 +45,11 @@ const buttonsEngineer = [
   "π",
   "e",
   "×",
-  "",
-  "",
   "+/−",
-  "−",
-  "",
-  "",
   "0",
+  ".",
   "+",
-  "",
-  "",
-  ",",
+  "−",
   "=",
 ];
 
@@ -126,7 +121,6 @@ function Calculator() {
           setDisplay("0");
           return;
         }
-
         // eslint-disable-next-line no-eval
         const result = eval(expr);
         setDisplay(String(result));
@@ -146,19 +140,11 @@ function Calculator() {
       return;
     }
 
-    if (val === ".") {
+    if (val === "." || val === ",") {
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
-      if (lastPart.includes(".")) return;
+      if (lastPart.includes(".") || lastPart.includes(",")) return;
       setDisplay((d) => (d === "0" ? "0." : d + "."));
-      return;
-    }
-
-    if (val === ",") {
-      const parts = display.split(/[+\-*/]/);
-      const lastPart = parts[parts.length - 1];
-      if (lastPart.includes(",")) return;
-      setDisplay((d) => (d === "0" ? "0," : d + ","));
       return;
     }
 
@@ -194,7 +180,7 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display, engineerMode]);
 
-  // Styles
+  // Стили
   const containerStyle = {
     minHeight: "100vh",
     display: "flex",
@@ -202,6 +188,7 @@ function Calculator() {
     justifyContent: "center",
     background: "linear-gradient(135deg, #7F00FF, #E100FF)",
     fontFamily: "Arial, sans-serif",
+    padding: 10,
   };
 
   const calcStyle = {
@@ -209,7 +196,8 @@ function Calculator() {
     padding: "24px",
     borderRadius: "16px",
     boxShadow: "0px 0px 20px rgba(0,0,0,0.3)",
-    width: 340,
+    width: engineerMode ? 460 : 340, // ширина шире для инженера
+    maxWidth: "95vw",
   };
 
   const displayStyle = {
@@ -224,6 +212,7 @@ function Calculator() {
     marginBottom: 8,
     fontFamily: "'Courier New', monospace",
     flexGrow: 1,
+    overflowX: "auto",
   };
 
   const deleteButtonStyle = {
@@ -251,7 +240,7 @@ function Calculator() {
 
   const gridStyle = {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: engineerMode ? "repeat(8, 1fr)" : "repeat(4, 1fr)",
     gap: 10,
   };
 
@@ -279,7 +268,11 @@ function Calculator() {
 
         {/* Кнопки переключения режима и удаления */}
         <div
-          style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: 8,
+          }}
         >
           <button
             style={toggleModeButtonStyle}
