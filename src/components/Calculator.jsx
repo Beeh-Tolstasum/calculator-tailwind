@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-// Кнопки для обычного режима — теперь с одной кнопкой "()"
+// Обычный режим — одна кнопка для скобок "()"
 const buttonsSimple = [
   "C",
   "()",
@@ -24,7 +24,7 @@ const buttonsSimple = [
   "=",
 ];
 
-// Инженерный режим — с цифрами и скобками отдельно
+// Инженерный режим — скобки и цифры отдельные
 const buttonsEngineer = [
   "⇄",
   "Rad",
@@ -67,10 +67,14 @@ const buttonsEngineer = [
 function Calculator() {
   const [display, setDisplay] = useState("0");
   const [engineerMode, setEngineerMode] = useState(false);
-  // Для обычного режима: счётчик скобок, чтобы по очереди вставлять ( и )
-  const [simpleBracketToggle, setSimpleBracketToggle] = useState(true); // true = вставить '('
+  const [simpleBracketToggle, setSimpleBracketToggle] = useState(true);
 
-  const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
+  const isValidChar = (ch) =>
+    /^[0-9+\-*/().e%]$/.test(ch) ||
+    ch === "E" ||
+    ch === "×" ||
+    ch === "÷" ||
+    ch === "−";
 
   const normalizeOperator = (op) => {
     if (op === "÷") return "/";
@@ -84,7 +88,7 @@ function Calculator() {
 
     if (val === "C") {
       setDisplay("0");
-      setSimpleBracketToggle(true); // сбрасываем счётчик скобок
+      setSimpleBracketToggle(true);
       return;
     }
 
@@ -120,7 +124,6 @@ function Calculator() {
       return;
 
     if (val === "=") {
-      // Специальная проверка на "8977"
       if (display === "8977") {
         setDisplay("Beeh👋🏻😁");
         return;
@@ -139,6 +142,7 @@ function Calculator() {
           setDisplay("0");
           return;
         }
+
         // eslint-disable-next-line no-eval
         const result = eval(expr);
         setDisplay(String(result));
@@ -177,11 +181,10 @@ function Calculator() {
       }
     }
 
-    // В обычном режиме обработка кнопки "()"
     if (!engineerMode && val === "()") {
       setDisplay((d) => {
         if (d === "0") {
-          setSimpleBracketToggle(false); // Следующий раз вставим )
+          setSimpleBracketToggle(false);
           return "(";
         }
         if (simpleBracketToggle) {
@@ -316,7 +319,7 @@ function Calculator() {
         {/* Дисплей */}
         <div style={displayStyle}>{display}</div>
 
-        {/* Кнопки переключения режима и удаления */}
+        {/* Кнопки */}
         <div
           style={{
             display: "flex",
@@ -328,29 +331,25 @@ function Calculator() {
             style={toggleModeButtonStyle}
             onClick={() => {
               setEngineerMode((v) => !v);
-              setSimpleBracketToggle(true); // сбрасываем скобки при переключении
+              setSimpleBracketToggle(true);
             }}
-            aria-label="Переключить режим"
           >
             {engineerMode ? "Инж" : "Обч"}
           </button>
-
           <button
             style={{ ...deleteButtonStyle, marginLeft: 8 }}
             onClick={() => {
               setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
-              setSimpleBracketToggle(true); // Можно сбрасывать тут или не сбрасывать
+              setSimpleBracketToggle(true);
             }}
-            aria-label="Удалить последний символ"
           >
             ⌫
           </button>
         </div>
 
-        {/* Разделительная линия */}
         <hr style={{ border: "2px solid #000", margin: "16px 0" }} />
 
-        {/* Сетка кнопок */}
+        {/* Кнопки */}
         <div style={gridStyle}>
           {buttons.map((b, i) =>
             b ? (
