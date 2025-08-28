@@ -24,38 +24,14 @@ const buttonsSimple = [
 ];
 
 const buttonsEngineer = [
-  "⇄",
-  "Rad",
-  "√",
-  "C",
-  "sin",
-  "cos",
-  "tan",
-  "()",
-  "ln",
-  "log",
-  "1/x",
-  "%",
-  "eˣ",
-  "x²",
-  "xʸ",
-  "÷",
-  "|x|",
-  "π",
-  "e",
-  "×",
-  "",
-  "",
-  "+/−",
-  "−",
-  "",
-  "",
-  "0",
-  "+",
-  "",
-  "",
-  ",",
-  "=",
+  "⇄", "Rad", "√", "C",
+  "sin", "cos", "tan", "()",
+  "ln", "log", "1/x", "%",
+  "eˣ", "x²", "xʸ", "÷",
+  "|x|", "π", "e", "×",
+  "", "", "+/−", "−",
+  "", "", "0", "+",
+  "", "", ",", "=",
 ];
 
 function Calculator() {
@@ -95,25 +71,7 @@ function Calculator() {
       });
       return;
     }
-    if (
-      !isValidChar(val) &&
-      val !== "=" &&
-      val !== "," &&
-      val !== "Rad" &&
-      val !== "sin" &&
-      val !== "cos" &&
-      val !== "tan" &&
-      val !== "ln" &&
-      val !== "log" &&
-      val !== "1/x" &&
-      val !== "eˣ" &&
-      val !== "x²" &&
-      val !== "xʸ" &&
-      val !== "|x|" &&
-      val !== "π" &&
-      val !== "e"
-    )
-      return;
+    if (!isValidChar(val) && val !== "=" && val !== "," && val !== "Rad" && val !== "sin" && val !== "cos" && val !== "tan" && val !== "ln" && val !== "log" && val !== "1/x" && val !== "eˣ" && val !== "x²" && val !== "xʸ" && val !== "|x|" && val !== "π" && val !== "e") return;
 
     if (val === "=") {
       try {
