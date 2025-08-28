@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 
 const buttons = [
   "C",
-  "(",
-  ")",
+  "()",
   "%",
   "÷",
   "7",
@@ -27,7 +26,6 @@ const buttons = [
 function Calculator() {
   const [display, setDisplay] = useState("0");
   const [history, setHistory] = useState("");
-  const [showingHello, setShowingHello] = useState(false);
 
   const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
 
@@ -41,32 +39,22 @@ function Calculator() {
   const onClick = (val) => {
     if (!val) return;
 
+    // Очистка
     if (val === "C") {
       setDisplay("0");
       setHistory("");
-      setShowingHello(false);
       return;
     }
 
-    if (showingHello) {
-      if (val === "=") return;
-      if (isValidChar(val)) {
-        setDisplay(val === "0" ? "0" : val);
-        setShowingHello(false);
-      }
+    // Обработка кнопки "()"
+    if (val === "()") {
+      setDisplay((d) => (d === "0" ? "()" : d + "()"));
       return;
     }
 
     if (!isValidChar(val) && val !== "=") return;
 
     if (val === "=") {
-      if (display === "8977") {
-        setDisplay("Hello World");
-        setHistory("8977 = Hello World");
-        setShowingHello(true);
-        return;
-      }
-
       try {
         let expr = display
           .replace(/÷/g, "/")
@@ -88,6 +76,7 @@ function Calculator() {
       return;
     }
 
+    // Операторы
     if (/[+\-*/]/.test(val)) {
       setDisplay((d) => {
         const last = d.slice(-1);
@@ -98,6 +87,7 @@ function Calculator() {
       return;
     }
 
+    // Точка
     if (val === ".") {
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
@@ -106,25 +96,7 @@ function Calculator() {
       return;
     }
 
-    if (val === "e") {
-      const last = display.slice(-1);
-      if (!/[0-9]/.test(last)) return;
-      setDisplay((d) => d + val);
-      return;
-    }
-
-    if (val === "+/−") {
-      const parts = display.match(/(.*?)([0-9]+)$/);
-      if (parts && parts[2]) {
-        const idx = display.lastIndexOf(parts[2]);
-        const before = display.slice(0, idx);
-        const num = parts[2];
-        const inv = (-Number(num)).toString();
-        setDisplay(before + inv);
-      }
-      return;
-    }
-
+    // Число/константы
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -141,22 +113,10 @@ function Calculator() {
         onClick("=");
         return;
       }
-      if (k === "Backspace") {
-        e.preventDefault();
-        // Backspace удаляем, как обычное поле ввода, без отдельной кнопки
-        setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
-        return;
-      }
-      if (k === "Escape") {
-        e.preventDefault();
-        setDisplay("0");
-        setShowingHello(false);
-        return;
-      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [display, showingHello]);
+  }, [display]);
 
   const glassButtonStyle = {
     background: "rgba(255, 255, 255, 0.25)",
@@ -164,70 +124,74 @@ function Calculator() {
     backdropFilter: "blur(10px)",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.3)",
-    transform: "perspective(500px) rotateY(-10deg) translateY(-2px)",
-    transition: "all 0.3s ease",
-    color: "black",
-    fontWeight: "600",
     width: "100%",
     height: "56px",
+    fontWeight: 600,
   };
 
-  const clearButtonStyle = {
-    ...glassButtonStyle,
-    background: "linear-gradient(135deg, #f43f5e, #ec4899)",
-    color: "white",
-    border: "1px solid rgba(255,255,255,0.6)",
-    fontWeight: "700",
-    height: "48px",
+  const containerStyle = {
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
-      <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 w-full max-w-md p-6 md:p-8">
-        <div className="mb-4">
-          <div className="text-lg font-semibold text-gray-700">Калькулятор</div>
-        </div>
+    <div style={containerStyle}>
+      <div
+        style={{
+          width: 420,
+          padding: 16,
+          borderRadius: 12,
+          border: "1px solid #ddd",
+          background: "#fff",
+        }}
+      >
+        {/* Дисплей */}
         <div
-          className="bg-black/80 text-white rounded-md h-14 px-4 py-2 text-2xl md:text-3xl mb-4 shadow-inner select-none"
           style={{
-            textAlign: "right",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            height: 64,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            padding: "0 12px",
             fontFamily: "'Courier New', monospace",
+            fontSize: 28,
+            borderBottom: "1px solid #ccc",
           }}
         >
-          {display.length > 23 ? display.slice(-23) : display}
+          {display}
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
-          {buttons.map((b, idx) => {
-            if (!b) return <div key={"sp-" + idx} />;
-            const isClear = b === "C";
-            return (
-              <button
-                key={b + idx}
-                onClick={() => onClick(b)}
-                style={isClear ? clearButtonStyle : glassButtonStyle}
-                className={isClear ? "col-span-1" : ""}
-                onMouseDown={(e) =>
-                  (e.currentTarget.style.transform =
-                    "perspective(500px) rotateY(-10deg) translateY(0)")
-                }
-                onMouseUp={(e) =>
-                  (e.currentTarget.style.transform =
-                    "perspective(500px) rotateY(-10deg) translateY(-2px)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.transform =
-                    "perspective(500px) rotateY(-10deg) translateY(-2px)")
-                }
-              >
-                {b}
-              </button>
-            );
-          })}
+        {/* Кнопки */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 8,
+            marginTop: 12,
+          }}
+        >
+          {buttons.map((b, i) => (
+            <button key={i} onClick={() => onClick(b)} style={glassButtonStyle}>
+              {b}
+            </button>
+          ))}
         </div>
+
+        {/* История (опционально) */}
+        {history && (
+          <div
+            style={{
+              marginTop: 12,
+              fontFamily: "'Courier New', monospace",
+              fontSize: 14,
+              color: "#555",
+            }}
+          >
+            {history}
+          </div>
+        )}
       </div>
     </div>
   );
