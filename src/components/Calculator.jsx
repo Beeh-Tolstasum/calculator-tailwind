@@ -17,6 +17,7 @@ const buttons = [
   ".",
   "=",
   "+",
+  "e", // добавил e в кнопки
 ];
 
 function Calculator() {
@@ -24,7 +25,8 @@ function Calculator() {
   const [history, setHistory] = useState("");
   const [showingHello, setShowingHello] = useState(false);
 
-  const isValidChar = (ch) => /[0-9+\-*/.]/.test(ch);
+  // Разрешённые символы: цифры, операторы, точка и e
+  const isValidChar = (ch) => /[0-9+\-*/.e]/.test(ch);
 
   const backspace = () => {
     if (showingHello) {
@@ -75,11 +77,14 @@ function Calculator() {
       }
 
       try {
-        if (!/[0-9]/.test(display)) {
+        if (!/[0-9e]/.test(display)) {
           setDisplay("0");
           return;
         }
-        const result = Function('"use strict";return (' + display + ")")();
+        // Заменяем 'e' на Math.E для вычисления
+        const expression = display.replace(/e/g, `(${Math.E})`);
+
+        const result = Function('"use strict";return (' + expression + ")")();
         setHistory(display + " = " + result);
         setDisplay(String(result));
       } catch {
@@ -88,6 +93,7 @@ function Calculator() {
       return;
     }
 
+    // Проверка на двойные операторы (в том числе точка и e)
     if (/[+\-*/]/.test(val)) {
       setDisplay((d) => {
         const last = d.slice(-1);
@@ -99,6 +105,30 @@ function Calculator() {
       return;
     }
 
+    // Проверка точки: нельзя вводить две точки подряд в числе
+    if (val === ".") {
+      const parts = display.split(/[+\-*/]/);
+      const lastPart = parts[parts.length - 1];
+      if (lastPart.includes(".")) {
+        // уже есть точка в текущем числе
+        return;
+      }
+      setDisplay((d) => (d === "0" ? val : d + val));
+      return;
+    }
+
+    // Проверка e: можно только после числа или оператора, но не подряд
+    if (val === "e") {
+      const last = display.slice(-1);
+      if (!/[0-9]/.test(last)) {
+        // запрещаем вставлять e после e, оператора или точки
+        return;
+      }
+      setDisplay((d) => d + val);
+      return;
+    }
+
+    // Ввод цифр
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -117,24 +147,21 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display, showingHello]);
 
-  // Стиль кнопок под стекло с 3Dыыыыы и наклоном влево и немного вверх
   const glassButtonStyle = {
     background: "rgba(255, 255, 255, 0.25)",
-    boxShadow: `4px 4px 8px rgba(0,0,0,0.2), -4px -4px 8px rgba(255,255,255,0.7)`,
+    boxShadow: `
+      4px 4px 8px rgba(0,0,0,0.2), 
+      -4px -4px 8px rgba(255,255,255,0.7)
+    `,
     backdropFilter: "blur(10px)",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.3)",
-    transform: "perspective(500px) rotateY(-10deg) translateY(-2px)",
+    transform: "perspective(500px) rotateY(-10deg) translateY(-2px)", // по твоему предыдущему комменту — влево и вверх
     transition: "all 0.3s ease",
     color: "black",
     fontWeight: "600",
     width: "100%",
     height: "56px",
-    cursor: "pointer",
-    userSelect: "none",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   };
 
   const clearButtonStyle = {
@@ -142,9 +169,9 @@ function Calculator() {
     background: "linear-gradient(135deg, #f43f5e, #ec4899)",
     color: "white",
     border: "1px solid rgba(255,255,255,0.6)",
+    transform: "perspective(500px) rotateY(-10deg) translateY(-2px)",
     fontWeight: "700",
-    height: "56px", // теперь такая же высота
-    padding: "0", // убираем лишние паддинги, чтобы высота была точной
+    height: "48px",
   };
 
   return (
@@ -165,7 +192,6 @@ function Calculator() {
         >
           {display.length > 23 ? display.slice(-23) : display}
         </div>
-
         <div className="grid grid-cols-4 gap-3">
           {buttons.map((b) => (
             <button
@@ -174,7 +200,7 @@ function Calculator() {
               style={glassButtonStyle}
               onMouseDown={(e) => {
                 e.currentTarget.style.transform =
-                  "perspective(500px) rotateY(-10deg) translateY(0px)";
+                  "perspective(500px) rotateY(-10deg) translateY(0)";
               }}
               onMouseUp={(e) => {
                 e.currentTarget.style.transform =
@@ -194,7 +220,7 @@ function Calculator() {
             className="col-span-4"
             onMouseDown={(e) => {
               e.currentTarget.style.transform =
-                "perspective(500px) rotateY(-10deg) translateY(0px)";
+                "perspective(500px) rotateY(-10deg) translateY(0)";
             }}
             onMouseUp={(e) => {
               e.currentTarget.style.transform =
