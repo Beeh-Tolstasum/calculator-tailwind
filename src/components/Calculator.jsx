@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 
+// Кнопки для обычного режима — без скобок
 const buttonsSimple = [
   "C",
-  "(",
-  ")",
   "%",
   "÷",
   "7",
@@ -24,7 +23,7 @@ const buttonsSimple = [
   "=",
 ];
 
-// Планшетный вид для инженерного режима - больше колонок, меньше пустых ячеек
+// Инженерный режим — с цифрами и скобками отдельно
 const buttonsEngineer = [
   "⇄",
   "Rad",
@@ -48,11 +47,20 @@ const buttonsEngineer = [
   "e",
   "×",
   "+/−",
+  "7",
+  "8",
+  "9",
+  "+",
+  "4",
+  "5",
+  "6",
+  "−",
+  "1",
+  "2",
+  "3",
+  "=",
   "0",
   ".",
-  "+",
-  "−",
-  "=",
 ];
 
 function Calculator() {
@@ -165,6 +173,11 @@ function Calculator() {
       }
     }
 
+    // Если в обычном режиме и нажали "(" или ")", игнорируем
+    if (!engineerMode && (val === "(" || val === ")")) {
+      return;
+    }
+
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -207,7 +220,7 @@ function Calculator() {
     padding: "24px",
     borderRadius: "16px",
     boxShadow: "0px 0px 20px rgba(0,0,0,0.3)",
-    width: engineerMode ? 460 : 340,
+    width: engineerMode ? 520 : 340,
     maxWidth: "95vw",
   };
 
@@ -223,7 +236,7 @@ function Calculator() {
     marginBottom: 8,
     fontFamily: "'Courier New', monospace",
     flexGrow: 1,
-    overflowX: "hidden", // убираем скролл
+    overflowX: "hidden",
   };
 
   const deleteButtonStyle = {
