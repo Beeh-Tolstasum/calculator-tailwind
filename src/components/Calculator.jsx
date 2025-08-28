@@ -23,10 +23,8 @@ function Calculator() {
   const [display, setDisplay] = useState("0");
   const [history, setHistory] = useState("");
 
-  // Валидация символов
   const isValidChar = (ch) => /[0-9+\-*/.]/.test(ch);
 
-  // Удаление последнего символа
   const backspace = () => {
     setDisplay((d) => {
       if (d.length <= 1) return "0";
@@ -34,23 +32,32 @@ function Calculator() {
     });
   };
 
-  // Обработка нажатий кнопок
   const onClick = (val) => {
-    // Разрешаем только валидные символы или очистку
+    if (display + val === "8977") {
+      setDisplay("Hello World");
+      return;
+    }
+
+    if (display === "Hello World") {
+      setDisplay(val);
+      return;
+    }
+
     if (!isValidChar(val) && val !== "Очистить" && val !== "C" && val !== "=")
       return;
 
-    // Очистка
     if (val === "Очистить" || val === "C") {
       setDisplay("0");
       setHistory("");
       return;
     }
 
-    // Выполнение =
     if (val === "=" || val === "Enter") {
       try {
-        // Разрешаем только валидные выражения (есть цифра)
+        if (display === "8977") {
+          setDisplay("Hello World");
+          return;
+        }
         if (!/[0-9]/.test(display)) {
           setDisplay("0");
           return;
@@ -64,30 +71,25 @@ function Calculator() {
       return;
     }
 
-    // Замена оператора или добавление
     if (/[+\-*/]/.test(val)) {
       setDisplay((d) => {
         const last = d.slice(-1);
         if (/[+\-*/]/.test(last)) {
-          // заменить последний оператор
           return d.slice(0, -1) + val;
         }
-        // иначе просто добавить оператор
         return d + val;
       });
       return;
     }
 
-    // Цифры и точка
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
-  // Клавиатура
   useEffect(() => {
     const handler = (e) => {
       const k = e.key;
       if (isValidChar(k)) onClick(k);
-      if (k === "Enter") onClick("="); // Enter вызывает =
+      if (k === "Enter") onClick("=");
       if (k === "Backspace") backspace();
       if (k === "Escape") setDisplay("0");
     };
@@ -95,7 +97,6 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display]);
 
-  // Верстка и стиль
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
       <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-2xl border border-white/60 w-full max-w-md p-6 md:p-8">
