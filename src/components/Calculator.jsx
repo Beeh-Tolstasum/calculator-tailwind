@@ -117,7 +117,7 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display, showingHello]);
 
-  // Стиль кнопок под стекло с 3D и наклоном влево и немного вверх
+  // Стиль кнопок под стекло с 3Dыыыыы и наклоном влево и немного вверх
   const glassButtonStyle = {
     background: "rgba(255, 255, 255, 0.25)",
     boxShadow: `4px 4px 8px rgba(0,0,0,0.2), -4px -4px 8px rgba(255,255,255,0.7)`,
