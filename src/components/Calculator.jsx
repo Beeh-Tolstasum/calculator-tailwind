@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 
 const buttonsSimple = [
   "C",
-  "()",
+  "(",
+  ")",
   "%",
   "÷",
   "7",
@@ -23,7 +24,7 @@ const buttonsSimple = [
   "=",
 ];
 
-// Планшетный вид для инженерного режима - разделяем скобки на отдельные кнопки
+// Планшетный вид для инженерного режима - больше колонок, меньше пустых ячеек
 const buttonsEngineer = [
   "⇄",
   "Rad",
@@ -69,22 +70,11 @@ function Calculator() {
 
   const onClick = (val) => {
     if (!val) return;
+
     if (val === "C") {
       setDisplay("0");
       return;
     }
-    if (val === "()") {
-      setDisplay((d) => (d === "0" ? "()" : d + "()"));
-      return;
-    }
-
-    // Обработка отдельных скобок для инженерного режима
-    if (val === "(" || val === ")") {
-      setDisplay((d) => (d === "0" ? val : d + val));
-      return;
-    }
-
-    if (val === "⇄") return;
 
     if (val === "+/−") {
       setDisplay((d) => {
@@ -94,6 +84,8 @@ function Calculator() {
       });
       return;
     }
+
+    if (val === "⇄") return;
 
     if (
       !isValidChar(val) &&
@@ -116,13 +108,13 @@ function Calculator() {
       return;
 
     if (val === "=") {
-      try {
-        // Спец. кейс для "8977"
-        if (display === "8977") {
-          setDisplay("Hello Beeh");
-          return;
-        }
+      // Специальная проверка на "8977"
+      if (display === "8977") {
+        setDisplay("Hello Beeh Tolstasum");
+        return;
+      }
 
+      try {
         let expr = display
           .replace(/÷/g, "/")
           .replace(/×/g, "*")
@@ -231,7 +223,7 @@ function Calculator() {
     marginBottom: 8,
     fontFamily: "'Courier New', monospace",
     flexGrow: 1,
-    overflowX: "hidden", // скрываем полосы прокрутки
+    overflowX: "hidden", // убираем скролл
   };
 
   const deleteButtonStyle = {
@@ -275,7 +267,7 @@ function Calculator() {
     userSelect: "none",
   };
 
-  ButtonStyle = {
+  const clearButtonStyle = {
     ...buttonStyle,
     background: "#ff4d4d",
     color: "#fff",
