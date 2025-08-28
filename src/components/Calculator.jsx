@@ -33,11 +33,6 @@ function Calculator() {
   };
 
   const onClick = (val) => {
-    if (display + val === "8977") {
-      setDisplay("Hello World");
-      return;
-    }
-
     if (display === "Hello World") {
       setDisplay(val);
       return;
@@ -53,11 +48,13 @@ function Calculator() {
     }
 
     if (val === "=" || val === "Enter") {
+      if (display === "8977") {
+        setDisplay("Hello World");
+        setHistory("8977 = Hello World");
+        return;
+      }
+
       try {
-        if (display === "8977") {
-          setDisplay("Hello World");
-          return;
-        }
         if (!/[0-9]/.test(display)) {
           setDisplay("0");
           return;
