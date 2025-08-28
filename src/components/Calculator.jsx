@@ -137,14 +137,13 @@ function Calculator() {
     userSelect: "none",
   };
 
-  // Стиль кнопки очистки, сохраним градиент и стекло
   const clearButtonStyle = {
     ...glassButtonStyle,
-    background: "linear-gradient(135deg, #f43f5e, #ec4899)", // яркий градиент
+    background: "linear-gradient(135deg, #f43f5e, #ec4899)",
     color: "white",
     border: "1px solid rgba(255,255,255,0.6)",
     fontWeight: "700",
-    height: "48px",
+    // height: "56px", // Используем такую же высоту
   };
 
   return (
