@@ -25,7 +25,6 @@ const buttons = [
 
 function Calculator() {
   const [display, setDisplay] = useState("0");
-  const [history, setHistory] = useState("");
 
   const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
 
@@ -39,14 +38,11 @@ function Calculator() {
   const onClick = (val) => {
     if (!val) return;
 
-    // Очистка
     if (val === "C") {
       setDisplay("0");
-      setHistory("");
       return;
     }
 
-    // Обработка кнопки "()"
     if (val === "()") {
       setDisplay((d) => (d === "0" ? "()" : d + "()"));
       return;
@@ -68,7 +64,6 @@ function Calculator() {
         }
 
         const result = Function('"use strict";return (' + expr + ")")();
-        setHistory(display + " = " + result);
         setDisplay(String(result));
       } catch {
         setDisplay("Error");
@@ -76,7 +71,6 @@ function Calculator() {
       return;
     }
 
-    // Операторы
     if (/[+\-*/]/.test(val)) {
       setDisplay((d) => {
         const last = d.slice(-1);
@@ -87,7 +81,6 @@ function Calculator() {
       return;
     }
 
-    // Точка
     if (val === ".") {
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
@@ -96,7 +89,6 @@ function Calculator() {
       return;
     }
 
-    // Число/константы
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -118,80 +110,66 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display]);
 
-  const glassButtonStyle = {
-    background: "rgba(255, 255, 255, 0.25)",
-    boxShadow: `4px 4px 8px rgba(0,0,0,0.2), -4px -4px 8px rgba(255,255,255,0.7)`,
-    backdropFilter: "blur(10px)",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.3)",
-    width: "100%",
-    height: "56px",
-    fontWeight: 600,
-  };
-
+  // Стили из фиолетового калькулятора
   const containerStyle = {
     minHeight: "100vh",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    background: "linear-gradient(135deg, #7F00FF, #E100FF)",
+    fontFamily: "Arial, sans-serif",
+  };
+
+  const calcStyle = {
+    background: "#b18eff",
+    padding: "24px",
+    borderRadius: "16px",
+    boxShadow: "0px 0px 20px rgba(0,0,0,0.3)",
+    width: 320,
+  };
+
+  const displayStyle = {
+    background: "#1e1e1e",
+    color: "#fff",
+    height: 60,
+    borderRadius: 8,
+    textAlign: "right",
+    padding: "0 12px",
+    fontSize: 28,
+    lineHeight: "60px",
+    marginBottom: 16,
+    fontFamily: "'Courier New', monospace",
+  };
+
+  const gridStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: 10,
+  };
+
+  const buttonStyle = {
+    background: "#d1b3ff",
+    border: "none",
+    borderRadius: 12,
+    height: 50,
+    fontSize: 18,
+    fontWeight: 600,
+    boxShadow: "2px 2px 6px rgba(0,0,0,0.2)",
+    cursor: "pointer",
   };
 
   return (
     <div style={containerStyle}>
-      <div
-        style={{
-          width: 420,
-          padding: 16,
-          borderRadius: 12,
-          border: "1px solid #ddd",
-          background: "#fff",
-        }}
-      >
-        {/* Дисплей */}
-        <div
-          style={{
-            height: 64,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            padding: "0 12px",
-            fontFamily: "'Courier New', monospace",
-            fontSize: 28,
-            borderBottom: "1px solid #ccc",
-          }}
-        >
-          {display}
-        </div>
-
-        {/* Кнопки */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 8,
-            marginTop: 12,
-          }}
-        >
+      <div style={calcStyle}>
+        <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
+        <div style={displayStyle}>{display}</div>
+        <div style={gridStyle}>
           {buttons.map((b, i) => (
-            <button key={i} onClick={() => onClick(b)} style={glassButtonStyle}>
+            <button key={i} onClick={() => onClick(b)} style={buttonStyle}>
               {b}
             </button>
           ))}
         </div>
-
-        {/* История (опционально) */}
-        {history && (
-          <div
-            style={{
-              marginTop: 12,
-              fontFamily: "'Courier New', monospace",
-              fontSize: 14,
-              color: "#555",
-            }}
-          >
-            {history}
-          </div>
-        )}
       </div>
     </div>
   );
