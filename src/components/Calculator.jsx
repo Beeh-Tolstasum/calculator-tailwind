@@ -117,7 +117,7 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display, showingHello]);
 
-  // Стиль кнопок под стекло с 3D и наклоном вправо
+  // Стиль кнопок под стекло с 3D и наклоном влево и немного вверх
   const glassButtonStyle = {
     background: "rgba(255, 255, 255, 0.25)",
     boxShadow: `
@@ -127,21 +127,22 @@ function Calculator() {
     backdropFilter: "blur(10px)",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.3)",
-    transform: "perspective(500px) rotateY(10deg)",
+    transform: "perspective(500px) rotateY(-10deg) translateY(-2px)",
     transition: "all 0.3s ease",
     color: "black",
     fontWeight: "600",
     width: "100%",
     height: "56px",
+    cursor: "pointer",
+    userSelect: "none",
   };
 
-  // Стиль кнопки очистки, сохраним градиент и немного добавим стекла
+  // Стиль кнопки очистки, сохраним градиент и стекло
   const clearButtonStyle = {
     ...glassButtonStyle,
     background: "linear-gradient(135deg, #f43f5e, #ec4899)", // яркий градиент
     color: "white",
     border: "1px solid rgba(255,255,255,0.6)",
-    transform: "perspective(500px) rotateY(10deg)",
     fontWeight: "700",
     height: "48px",
   };
@@ -163,15 +164,15 @@ function Calculator() {
               style={glassButtonStyle}
               onMouseDown={(e) => {
                 e.currentTarget.style.transform =
-                  "perspective(500px) rotateY(10deg) translateY(2px)";
+                  "perspective(500px) rotateY(-10deg) translateY(0px)";
               }}
               onMouseUp={(e) => {
                 e.currentTarget.style.transform =
-                  "perspective(500px) rotateY(10deg)";
+                  "perspective(500px) rotateY(-10deg) translateY(-2px)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform =
-                  "perspective(500px) rotateY(10deg)";
+                  "perspective(500px) rotateY(-10deg) translateY(-2px)";
               }}
             >
               {b}
@@ -183,15 +184,15 @@ function Calculator() {
             className="col-span-4"
             onMouseDown={(e) => {
               e.currentTarget.style.transform =
-                "perspective(500px) rotateY(10deg) translateY(2px)";
+                "perspective(500px) rotateY(-10deg) translateY(0px)";
             }}
             onMouseUp={(e) => {
               e.currentTarget.style.transform =
-                "perspective(500px) rotateY(10deg)";
+                "perspective(500px) rotateY(-10deg) translateY(-2px)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform =
-                "perspective(500px) rotateY(10deg)";
+                "perspective(500px) rotateY(-10deg) translateY(-2px)";
             }}
           >
             Очистить
