@@ -153,9 +153,19 @@ function Calculator() {
         <div className="mb-4">
           <div className="text-lg font-semibold text-gray-700">Калькулятор</div>
         </div>
-        <div className="bg-black/80 text-white text-right rounded-md h-14 px-4 py-2 text-2xl md:text-3xl mb-4 shadow-inner select-none">
-          {display}
+        <div
+          className="bg-black/80 text-white rounded-md h-14 px-4 py-2 text-2xl md:text-3xl mb-4 shadow-inner select-none"
+          style={{
+            textAlign: "right",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            fontFamily: "'Courier New', monospace",
+          }}
+        >
+          {display.length > 23 ? display.slice(-23) : display}
         </div>
+
         <div className="grid grid-cols-4 gap-3">
           {buttons.map((b) => (
             <button
