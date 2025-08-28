@@ -22,10 +22,16 @@ const buttons = [
 function Calculator() {
   const [display, setDisplay] = useState("0");
   const [history, setHistory] = useState("");
+  const [showingHello, setShowingHello] = useState(false); // новый флаг
 
   const isValidChar = (ch) => /[0-9+\-*/.]/.test(ch);
 
   const backspace = () => {
+    if (showingHello) {
+      setDisplay("0");
+      setShowingHello(false);
+      return;
+    }
     setDisplay((d) => {
       if (d.length <= 1) return "0";
       return d.slice(0, -1);
@@ -33,8 +39,23 @@ function Calculator() {
   };
 
   const onClick = (val) => {
-    if (display === "Hello World") {
-      setDisplay(val);
+    if (showingHello) {
+      // Если сейчас показывается Hello World, при любом вводе — очистить и начать заново
+      if (val === "Очистить" || val === "C") {
+        setDisplay("0");
+        setShowingHello(false);
+        setHistory("");
+        return;
+      }
+      if (val === "=") {
+        // Не делать ничего при повторном нажатии =
+        return;
+      }
+      // При любом другом вводе начинаем новый ввод
+      if (isValidChar(val)) {
+        setDisplay(val === "0" ? "0" : val);
+        setShowingHello(false);
+      }
       return;
     }
 
@@ -44,13 +65,15 @@ function Calculator() {
     if (val === "Очистить" || val === "C") {
       setDisplay("0");
       setHistory("");
+      setShowingHello(false);
       return;
     }
 
-    if (val === "=" || val === "Enter") {
+    if (val === "=") {
       if (display === "8977") {
         setDisplay("Hello World");
         setHistory("8977 = Hello World");
+        setShowingHello(true);
         return;
       }
 
@@ -79,6 +102,7 @@ function Calculator() {
       return;
     }
 
+    // Если текущий дисплей "0" — заменяем на новое число, иначе добавляем
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -88,11 +112,14 @@ function Calculator() {
       if (isValidChar(k)) onClick(k);
       if (k === "Enter") onClick("=");
       if (k === "Backspace") backspace();
-      if (k === "Escape") setDisplay("0");
+      if (k === "Escape") {
+        setDisplay("0");
+        setShowingHello(false);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [display]);
+  }, [display, showingHello]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
