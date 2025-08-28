@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 
-// Кнопки для обычного режима — без скобок
+// Кнопки для обычного режима — теперь с одной кнопкой "()"
 const buttonsSimple = [
   "C",
+  "()",
   "%",
   "÷",
   "7",
@@ -66,6 +67,8 @@ const buttonsEngineer = [
 function Calculator() {
   const [display, setDisplay] = useState("0");
   const [engineerMode, setEngineerMode] = useState(false);
+  // Для обычного режима: счётчик скобок, чтобы по очереди вставлять ( и )
+  const [simpleBracketToggle, setSimpleBracketToggle] = useState(true); // true = вставить '('
 
   const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
 
@@ -81,6 +84,7 @@ function Calculator() {
 
     if (val === "C") {
       setDisplay("0");
+      setSimpleBracketToggle(true); // сбрасываем счётчик скобок
       return;
     }
 
@@ -173,8 +177,21 @@ function Calculator() {
       }
     }
 
-    // Если в обычном режиме и нажали "(" или ")", игнорируем
-    if (!engineerMode && (val === "(" || val === ")")) {
+    // В обычном режиме обработка кнопки "()"
+    if (!engineerMode && val === "()") {
+      setDisplay((d) => {
+        if (d === "0") {
+          setSimpleBracketToggle(false); // Следующий раз вставим )
+          return "(";
+        }
+        if (simpleBracketToggle) {
+          setSimpleBracketToggle(false);
+          return d + "(";
+        } else {
+          setSimpleBracketToggle(true);
+          return d + ")";
+        }
+      });
       return;
     }
 
@@ -197,12 +214,13 @@ function Calculator() {
       if (k === "Escape") {
         e.preventDefault();
         setDisplay("0");
+        setSimpleBracketToggle(true);
         return;
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [display, engineerMode]);
+  }, [display, engineerMode, simpleBracketToggle]);
 
   // Стили
   const containerStyle = {
@@ -308,7 +326,10 @@ function Calculator() {
         >
           <button
             style={toggleModeButtonStyle}
-            onClick={() => setEngineerMode((v) => !v)}
+            onClick={() => {
+              setEngineerMode((v) => !v);
+              setSimpleBracketToggle(true); // сбрасываем скобки при переключении
+            }}
             aria-label="Переключить режим"
           >
             {engineerMode ? "Инж" : "Обч"}
@@ -316,9 +337,10 @@ function Calculator() {
 
           <button
             style={{ ...deleteButtonStyle, marginLeft: 8 }}
-            onClick={() =>
-              setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
-            }
+            onClick={() => {
+              setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
+              setSimpleBracketToggle(true); // Можно сбрасывать тут или не сбрасывать
+            }}
             aria-label="Удалить последний символ"
           >
             ⌫
