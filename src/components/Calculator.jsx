@@ -213,8 +213,13 @@ function Calculator() {
     fontFamily: "'Courier New', monospace",
     flexGrow: 1,
     overflowX: "auto",
+
+    // Скрываем полосы прокрутки
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE и Edge
   };
 
+  // Стили для кнопок
   const deleteButtonStyle = {
     background: "#ffb3b3",
     border: "none",
@@ -264,64 +269,77 @@ function Calculator() {
     boxShadow: "2px 2px 8px rgba(255, 0, 0, 0.7)",
   };
 
+  // Кнопки с дополнительным классом для скрытия скролла в Webkit-браузерах
+  // Класс добавлен в display div ниже
   const buttons = engineerMode ? buttonsEngineer : buttonsSimple;
 
   return (
-    <div style={containerStyle}>
-      <div style={calcStyle}>
-        <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
+    <>
+      {/* Добавляем стили для скрытия скролла в Chrome, Safari, Opera */}
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
 
-        {/* Дисплей */}
-        <div style={displayStyle}>{display}</div>
+      <div style={containerStyle}>
+        <div style={calcStyle}>
+          <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
 
-        {/* Кнопки переключения режима и удаления */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginBottom: 8,
-          }}
-        >
-          <button
-            style={toggleModeButtonStyle}
-            onClick={() => setEngineerMode((v) => !v)}
-            aria-label="Переключить режим"
+          {/* Дисплей */}
+          <div style={displayStyle} className="no-scrollbar">
+            {display}
+          </div>
+
+          {/* Кнопки переключения режима и удаления */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: 8,
+            }}
           >
-            {engineerMode ? "Инж" : "Обч"}
-          </button>
+            <button
+              style={toggleModeButtonStyle}
+              onClick={() => setEngineerMode((v) => !v)}
+              aria-label="Переключить режим"
+            >
+              {engineerMode ? "Инж" : "Обч"}
+            </button>
 
-          <button
-            style={{ ...deleteButtonStyle, marginLeft: 8 }}
-            onClick={() =>
-              setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
-            }
-            aria-label="Удалить последний символ"
-          >
-            ⌫
-          </button>
-        </div>
+            <button
+              style={{ ...deleteButtonStyle, marginLeft: 8 }}
+              onClick={() =>
+                setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
+              }
+              aria-label="Удалить последний символ"
+            >
+              ⌫
+            </button>
+          </div>
 
-        {/* Разделительная линия */}
-        <hr style={{ border: "2px solid #000", margin: "16px 0" }} />
+          {/* Разделительная линия */}
+          <hr style={{ border: "2px solid #000", margin: "16px 0" }} />
 
-        {/* Сетка кнопок */}
-        <div style={gridStyle}>
-          {buttons.map((b, i) =>
-            b ? (
-              <button
-                key={i}
-                onClick={() => onClick(b)}
-                style={b === "C" ? clearButtonStyle : buttonStyle}
-              >
-                {b}
-              </button>
-            ) : (
-              <div key={i} />
-            )
-          )}
+          {/* Сетка кнопок */}
+          <div style={gridStyle}>
+            {buttons.map((b, i) =>
+              b ? (
+                <button
+                  key={i}
+                  onClick={() => onClick(b)}
+                  style={b === "C" ? clearButtonStyle : buttonStyle}
+                >
+                  {b}
+                </button>
+              ) : (
+                <div key={i} />
+              )
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
