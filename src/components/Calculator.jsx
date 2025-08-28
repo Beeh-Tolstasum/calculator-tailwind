@@ -22,7 +22,7 @@ const buttons = [
 function Calculator() {
   const [display, setDisplay] = useState("0");
   const [history, setHistory] = useState("");
-  const [showingHello, setShowingHello] = useState(false); // новый флаг
+  const [showingHello, setShowingHello] = useState(false);
 
   const isValidChar = (ch) => /[0-9+\-*/.]/.test(ch);
 
@@ -40,7 +40,6 @@ function Calculator() {
 
   const onClick = (val) => {
     if (showingHello) {
-      // Если сейчас показывается Hello World, при любом вводе — очистить и начать заново
       if (val === "Очистить" || val === "C") {
         setDisplay("0");
         setShowingHello(false);
@@ -48,10 +47,8 @@ function Calculator() {
         return;
       }
       if (val === "=") {
-        // Не делать ничего при повторном нажатии =
         return;
       }
-      // При любом другом вводе начинаем новый ввод
       if (isValidChar(val)) {
         setDisplay(val === "0" ? "0" : val);
         setShowingHello(false);
@@ -102,7 +99,6 @@ function Calculator() {
       return;
     }
 
-    // Если текущий дисплей "0" — заменяем на новое число, иначе добавляем
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -121,13 +117,42 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display, showingHello]);
 
+  // Стиль кнопок под стекло с 3D и наклоном вправо
+  const glassButtonStyle = {
+    background: "rgba(255, 255, 255, 0.25)",
+    boxShadow: `
+      4px 4px 8px rgba(0,0,0,0.2), 
+      -4px -4px 8px rgba(255,255,255,0.7)
+    `,
+    backdropFilter: "blur(10px)",
+    borderRadius: "12px",
+    border: "1px solid rgba(255,255,255,0.3)",
+    transform: "perspective(500px) rotateY(10deg)",
+    transition: "all 0.3s ease",
+    color: "black",
+    fontWeight: "600",
+    width: "100%",
+    height: "56px",
+  };
+
+  // Стиль кнопки очистки, сохраним градиент и немного добавим стекла
+  const clearButtonStyle = {
+    ...glassButtonStyle,
+    background: "linear-gradient(135deg, #f43f5e, #ec4899)", // яркий градиент
+    color: "white",
+    border: "1px solid rgba(255,255,255,0.6)",
+    transform: "perspective(500px) rotateY(10deg)",
+    fontWeight: "700",
+    height: "48px",
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
-      <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-2xl border border-white/60 w-full max-w-md p-6 md:p-8">
+      <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 w-full max-w-md p-6 md:p-8">
         <div className="mb-4">
           <div className="text-lg font-semibold text-gray-700">Калькулятор</div>
         </div>
-        <div className="bg-black/80 text-white text-right rounded-md h-14 px-4 py-2 text-2xl md:text-3xl mb-4 shadow-inner">
+        <div className="bg-black/80 text-white text-right rounded-md h-14 px-4 py-2 text-2xl md:text-3xl mb-4 shadow-inner select-none">
           {display}
         </div>
         <div className="grid grid-cols-4 gap-3">
@@ -135,14 +160,39 @@ function Calculator() {
             <button
               key={b}
               onClick={() => onClick(b)}
-              className="bg-white/75 hover:bg-white/90 text-black font-semibold rounded-lg shadow-md transition-all duration-150 transform hover:-translate-y-0.5 active:scale-95 w-full h-14"
+              style={glassButtonStyle}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform =
+                  "perspective(500px) rotateY(10deg) translateY(2px)";
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform =
+                  "perspective(500px) rotateY(10deg)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform =
+                  "perspective(500px) rotateY(10deg)";
+              }}
             >
               {b}
             </button>
           ))}
           <button
             onClick={() => onClick("Очистить")}
-            className="col-span-4 bg-gradient-to-br from-pink-400 to-rose-500 hover:from-pink-500 hover:to-rose-600 text-white font-semibold rounded-lg shadow-md p-3 w-full h-12"
+            style={clearButtonStyle}
+            className="col-span-4"
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform =
+                "perspective(500px) rotateY(10deg) translateY(2px)";
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform =
+                "perspective(500px) rotateY(10deg)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform =
+                "perspective(500px) rotateY(10deg)";
+            }}
           >
             Очистить
           </button>
