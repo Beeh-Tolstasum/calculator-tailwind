@@ -10,22 +10,18 @@ const buttons = [
   "8",
   "9",
   "×",
-  "←",
   "4",
   "5",
   "6",
   "−",
-  "÷",
   "1",
   "2",
   "3",
   "+",
-  "e",
   "+/−",
   "0",
   ".",
   "=",
-  "",
 ];
 
 function Calculator() {
@@ -33,42 +29,25 @@ function Calculator() {
   const [history, setHistory] = useState("");
   const [showingHello, setShowingHello] = useState(false);
 
-  // Разрешённые символы и простой синтаксис
   const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
 
   const normalizeOperator = (op) => {
-    // нормализуем визуальные операторы
     if (op === "÷") return "/";
     if (op === "×") return "*";
     if (op === "−") return "-";
     return op;
   };
 
-  const backspace = () => {
-    if (showingHello) {
-      setDisplay("0");
-      setShowingHello(false);
-      return;
-    }
-    setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
-  };
-
   const onClick = (val) => {
     if (!val) return;
 
-    if (val === "←") {
-      backspace();
-      return;
-    }
-
-    if (val === "C" || val === "C") {
+    if (val === "C") {
       setDisplay("0");
       setHistory("");
       setShowingHello(false);
       return;
     }
 
-    // Русский/английский режим кнопки Очистить не требуется: используем C
     if (showingHello) {
       if (val === "=") return;
       if (isValidChar(val)) {
@@ -89,22 +68,17 @@ function Calculator() {
       }
 
       try {
-        // Простой безопасный вычислитель: разрешаем только цифры, скобки и операторы
-        // Преобразование визуальных символов в программные
         let expr = display
           .replace(/÷/g, "/")
           .replace(/×/g, "*")
           .replace(/−/g, "-")
           .replace(/e/g, `(${Math.E})`);
 
-        // Элементарная фильтрация: не допускаем букв и прочего
         if (!/[0-9+\-*/().e]/.test(expr)) {
           setDisplay("0");
           return;
         }
 
-        // Безопасный вычислитель: ограничиваемся встроенным парсингом через Function в рамках строгой изоляции (для демонстрации).
-        // Для продакшна лучше заменить на mathjs/expr-eval.
         const result = Function('"use strict";return (' + expr + ")")();
         setHistory(display + " = " + result);
         setDisplay(String(result));
@@ -114,9 +88,7 @@ function Calculator() {
       return;
     }
 
-    // Обработка арифметических операторов
     if (/[+\-*/]/.test(val)) {
-      // вставляем оператор, заменяя предыдущий если он есть
       setDisplay((d) => {
         const last = d.slice(-1);
         const op = normalizeOperator(val);
@@ -126,7 +98,6 @@ function Calculator() {
       return;
     }
 
-    // Точка
     if (val === ".") {
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
@@ -135,7 +106,6 @@ function Calculator() {
       return;
     }
 
-    // Роль e как константы - простая обработка, разрешаем добавлять после цифры
     if (val === "e") {
       const last = display.slice(-1);
       if (!/[0-9]/.test(last)) return;
@@ -143,22 +113,18 @@ function Calculator() {
       return;
     }
 
-    // +/− инвертирование последнего числа (упрощение)
     if (val === "+/−") {
-      // Найти последнее число в выражении и поменять знак
       const parts = display.match(/(.*?)([0-9]+)$/);
       if (parts && parts[2]) {
         const idx = display.lastIndexOf(parts[2]);
         const before = display.slice(0, idx);
         const num = parts[2];
-        // инвертируем число
         const inv = (-Number(num)).toString();
         setDisplay(before + inv);
       }
       return;
     }
 
-    // Число
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -177,7 +143,8 @@ function Calculator() {
       }
       if (k === "Backspace") {
         e.preventDefault();
-        backspace();
+        // Backspace удаляем, как обычное поле ввода, без отдельной кнопки
+        setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
         return;
       }
       if (k === "Escape") {
@@ -235,9 +202,7 @@ function Calculator() {
 
         <div className="grid grid-cols-4 gap-3">
           {buttons.map((b, idx) => {
-            // пропустим пустой элемент
             if (!b) return <div key={"sp-" + idx} />;
-            // zvl. кнопка «C» как очистка
             const isClear = b === "C";
             return (
               <button
