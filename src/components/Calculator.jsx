@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const buttons = [
+const basicButtons = [
   "C",
   "()",
   "%",
@@ -23,10 +23,30 @@ const buttons = [
   "=",
 ];
 
+const scientificButtons = [
+  "sin",
+  "cos",
+  "tan",
+  "ln",
+  "log",
+  "√",
+  "π",
+  "e",
+  "x²",
+  "xʸ",
+  "1/x",
+  "|x|",
+];
+
 function Calculator() {
   const [display, setDisplay] = useState("0");
+  const [isScientific, setIsScientific] = useState(false);
 
-  const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
+  // Проверка валидности вводимых символов
+  const isValidChar = (ch) =>
+    /^[0-9+\-*/().e%]$/.test(ch) ||
+    ch === "E" ||
+    scientificButtons.includes(ch);
 
   const normalizeOperator = (op) => {
     if (op === "÷") return "/";
@@ -35,33 +55,80 @@ function Calculator() {
     return op;
   };
 
+  // Обработка инженерных функций
+  const applyScientificFunc = (val, expr) => {
+    switch (val) {
+      case "sin":
+        return `Math.sin(${expr})`;
+      case "cos":
+        return `Math.cos(${expr})`;
+      case "tan":
+        return `Math.tan(${expr})`;
+      case "ln":
+        return `Math.log(${expr})`;
+      case "log":
+        return `Math.log10(${expr})`;
+      case "√":
+        return `Math.sqrt(${expr})`;
+      case "π":
+        return `${Math.PI}`;
+      case "e":
+        return `${Math.E}`;
+      case "x²":
+        return `Math.pow(${expr},2)`;
+      case "xʸ":
+        return null; // обработка xʸ сделаем через ввод оператора ^
+      case "1/x":
+        return `1/(${expr})`;
+      case "|x|":
+        return `Math.abs(${expr})`;
+      default:
+        return expr;
+    }
+  };
+
   const onClick = (val) => {
     if (!val) return;
 
+    // Сброс
     if (val === "C") {
       setDisplay("0");
       return;
     }
 
+    // Удаление последнего символа (по кнопке ⌫)
+    if (val === "⌫") {
+      setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
+      return;
+    }
+
+    // Скобки
     if (val === "()") {
       setDisplay((d) => (d === "0" ? "()" : d + "()"));
       return;
     }
 
-    if (!isValidChar(val) && val !== "=") return;
-
+    // Обработка "=" - вычисление результата
     if (val === "=") {
       try {
         let expr = display
           .replace(/÷/g, "/")
           .replace(/×/g, "*")
           .replace(/−/g, "-")
-          .replace(/e/g, `(${Math.E})`);
+          .replace(/π/g, Math.PI)
+          .replace(/e/g, Math.E)
+          .replace(/%/g, "/100")
+          .replace(/xʸ/g, "**"); // поддержка возведения в степень через **
 
-        if (!/[0-9+\-*/().e]/.test(expr)) {
-          setDisplay("0");
-          return;
-        }
+        // Заменим все функции (sin, cos и др.) на вызовы Math
+        expr = expr
+          .replace(/sin\(/g, "Math.sin(")
+          .replace(/cos\(/g, "Math.cos(")
+          .replace(/tan\(/g, "Math.tan(")
+          .replace(/ln\(/g, "Math.log(")
+          .replace(/log\(/g, "Math.log10(")
+          .replace(/√/g, "Math.sqrt")
+          .replace(/\|\s*([^|]+)\s*\|/g, "Math.abs($1)"); // |x| как Math.abs(x)
 
         const result = Function('"use strict";return (' + expr + ")")();
         setDisplay(String(result));
@@ -71,7 +138,8 @@ function Calculator() {
       return;
     }
 
-    if (/[+\-*/]/.test(val)) {
+    // Если оператор
+    if (/[+\-*/÷×−]/.test(val)) {
       setDisplay((d) => {
         const last = d.slice(-1);
         const op = normalizeOperator(val);
@@ -81,6 +149,7 @@ function Calculator() {
       return;
     }
 
+    // Обработка точки
     if (val === ".") {
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
@@ -89,6 +158,44 @@ function Calculator() {
       return;
     }
 
+    // Обработка переключения знака +/−
+    if (val === "+/−") {
+      setDisplay((d) => {
+        if (d === "0") return d;
+        if (d.startsWith("-")) return d.slice(1);
+        return "-" + d;
+      });
+      return;
+    }
+
+    // Добавление научных функций (sin, cos, и т.п.)
+    if (scientificButtons.includes(val)) {
+      if (val === "π" || val === "e") {
+        // Просто вставим число
+        setDisplay((d) => (d === "0" ? val : d + val));
+        return;
+      } else if (val === "x²") {
+        setDisplay((d) => d + "^2");
+        return;
+      } else if (val === "xʸ") {
+        setDisplay((d) => d + "^");
+        return;
+      } else if (val === "1/x") {
+        setDisplay((d) => `1/(${d})`);
+        return;
+      } else if (val === "|x|") {
+        setDisplay((d) => `|${d}|`);
+        return;
+      } else if (val === "√") {
+        setDisplay((d) => `√(${d})`);
+        return;
+      } else {
+        setDisplay((d) => val + "(" + d + ")");
+        return;
+      }
+    }
+
+    // По умолчанию добавляем цифру/символ
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -138,6 +245,7 @@ function Calculator() {
     lineHeight: "60px",
     marginBottom: 8,
     fontFamily: "'Courier New', monospace",
+    wordWrap: "break-word",
   };
 
   const deleteButtonStyle = {
@@ -173,7 +281,26 @@ function Calculator() {
   return (
     <div style={containerStyle}>
       <div style={calcStyle}>
-        <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
+        <div style={{ color: "#fff", marginBottom: 12, fontWeight: "bold" }}>
+          Калькулятор
+        </div>
+
+        {/* Переключатель режима */}
+        <button
+          onClick={() => setIsScientific((prev) => !prev)}
+          style={{
+            marginBottom: 12,
+            background: "#ffe066",
+            border: "none",
+            borderRadius: 8,
+            padding: "8px 12px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            width: "100%",
+          }}
+        >
+          {isScientific ? "Обычный режим" : "Инженерный режим"}
+        </button>
 
         {/* Display */}
         <div style={displayStyle}>{display}</div>
@@ -195,11 +322,31 @@ function Calculator() {
 
         {/* Buttons */}
         <div style={gridStyle}>
-          {buttons.map((b, i) => (
+          {(isScientific ? scientificButtons : basicButtons).map((b, i) => (
             <button key={i} onClick={() => onClick(b)} style={buttonStyle}>
               {b}
             </button>
           ))}
+
+          {/* В обычном режиме добавить кнопку переключения тоже */}
+          {!isScientific && (
+            <button
+              onClick={() => setIsScientific(true)}
+              style={{
+                gridColumn: "span 4",
+                background: "#ffa726",
+                border: "none",
+                borderRadius: 12,
+                height: 50,
+                fontSize: 18,
+                fontWeight: 600,
+                cursor: "pointer",
+                marginTop: 10,
+              }}
+            >
+              Перейти в инженерный режим
+            </button>
+          )}
         </div>
       </div>
     </div>
