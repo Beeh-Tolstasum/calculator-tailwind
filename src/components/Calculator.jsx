@@ -117,6 +117,12 @@ function Calculator() {
 
     if (val === "=") {
       try {
+        // Спец. кейс для "8977"
+        if (display === "8977") {
+          setDisplay("Hello Beeh Tolstasum");
+          return;
+        }
+
         let expr = display
           .replace(/÷/g, "/")
           .replace(/×/g, "*")
