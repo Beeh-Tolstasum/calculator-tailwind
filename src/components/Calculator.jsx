@@ -24,7 +24,7 @@ const buttonsSimple = [
 ];
 
 const buttonsEngineer = [
-  "←",
+  "⇄",
   "Rad",
   "√",
   "C",
@@ -46,21 +46,21 @@ const buttonsEngineer = [
   "×",
   "",
   "",
-  "",
+  "+/−",
   "−",
   "",
   "",
-  "",
-  "+",
-  "+/−",
   "0",
-  ".",
+  "+",
+  "",
+  "",
+  ",",
   "=",
 ];
 
 function Calculator() {
   const [display, setDisplay] = useState("0");
-  const [isEngineer, setIsEngineer] = useState(false);
+  const [engineerMode, setEngineerMode] = useState(false);
 
   const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
 
@@ -73,24 +73,47 @@ function Calculator() {
 
   const onClick = (val) => {
     if (!val) return;
-
     if (val === "C") {
       setDisplay("0");
       return;
     }
-
     if (val === "()") {
       setDisplay((d) => (d === "0" ? "()" : d + "()"));
       return;
     }
-
-    if (val === "←") {
-      // удаление по 1 символу
-      setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
+    if (val === "⇄") {
+      // Здесь можно добавить функционал переключения направления, пока пропустим
       return;
     }
-
-    if (!isValidChar(val) && val !== "=") return;
+    if (val === "+/−") {
+      // Переключение знака последнего числа
+      setDisplay((d) => {
+        // Простая реализация
+        if (d === "0") return d;
+        if (d.startsWith("-")) return d.slice(1);
+        return "-" + d;
+      });
+      return;
+    }
+    if (
+      !isValidChar(val) &&
+      val !== "=" &&
+      val !== "," &&
+      val !== "Rad" &&
+      val !== "sin" &&
+      val !== "cos" &&
+      val !== "tan" &&
+      val !== "ln" &&
+      val !== "log" &&
+      val !== "1/x" &&
+      val !== "eˣ" &&
+      val !== "x²" &&
+      val !== "xʸ" &&
+      val !== "|x|" &&
+      val !== "π" &&
+      val !== "e"
+    )
+      return;
 
     if (val === "=") {
       try {
@@ -98,14 +121,17 @@ function Calculator() {
           .replace(/÷/g, "/")
           .replace(/×/g, "*")
           .replace(/−/g, "-")
-          .replace(/e/g, `(${Math.E})`);
+          .replace(/,/g, ".")
+          .replace(/π/g, String(Math.PI))
+          .replace(/e/g, String(Math.E));
 
-        if (!/[0-9+\-*/().e]/.test(expr)) {
+        if (!/[0-9+\-*/().]/.test(expr)) {
           setDisplay("0");
           return;
         }
-
-        const result = Function('"use strict";return (' + expr + ")")();
+        // Для простоты используем eval, можно заменить на mathjs или Function
+        // eslint-disable-next-line no-eval
+        const result = eval(expr);
         setDisplay(String(result));
       } catch {
         setDisplay("Error");
@@ -131,6 +157,28 @@ function Calculator() {
       return;
     }
 
+    if (val === ",") {
+      // Запретить ввод нескольких запятых в числе
+      const parts = display.split(/[+\-*/]/);
+      const lastPart = parts[parts.length - 1];
+      if (lastPart.includes(",")) return;
+      setDisplay((d) => (d === "0" ? "0," : d + ","));
+      return;
+    }
+
+    // Пример обработки инженерных кнопок, можно доработать
+    if (engineerMode) {
+      if (val === "π") {
+        setDisplay((d) => (d === "0" ? String(Math.PI) : d + String(Math.PI)));
+        return;
+      }
+      if (val === "e") {
+        setDisplay((d) => (d === "0" ? String(Math.E) : d + String(Math.E)));
+        return;
+      }
+      // Другие функции пока не обрабатываем
+    }
+
     setDisplay((d) => (d === "0" ? val : d + val));
   };
 
@@ -150,7 +198,7 @@ function Calculator() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [display]);
+  }, [display, engineerMode]);
 
   const containerStyle = {
     minHeight: "100vh",
@@ -166,8 +214,7 @@ function Calculator() {
     padding: "24px",
     borderRadius: "16px",
     boxShadow: "0px 0px 20px rgba(0,0,0,0.3)",
-    width: isEngineer ? 480 : 320,
-    transition: "width 0.3s",
+    width: 340,
   };
 
   const displayStyle = {
@@ -181,6 +228,14 @@ function Calculator() {
     lineHeight: "60px",
     marginBottom: 8,
     fontFamily: "'Courier New', monospace",
+    flexGrow: 1,
+  };
+
+  const controlRowStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
   };
 
   const deleteButtonStyle = {
@@ -192,11 +247,10 @@ function Calculator() {
     fontSize: 20,
     fontWeight: "bold",
     cursor: "pointer",
-    marginLeft: 10,
   };
 
-  const toggleButtonStyle = {
-    background: "#ffdf75",
+  const toggleModeButtonStyle = {
+    background: engineerMode ? "#ffb347" : "#ffe066",
     border: "none",
     borderRadius: 12,
     height: 40,
@@ -204,22 +258,18 @@ function Calculator() {
     fontSize: 16,
     fontWeight: "bold",
     cursor: "pointer",
-  };
-
-  const controlRowStyle = {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginBottom: 10,
+    marginLeft: 8,
+    color: "#000",
   };
 
   const gridStyle = {
     display: "grid",
-    gridTemplateColumns: isEngineer ? "repeat(6, 1fr)" : "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(4, 1fr)",
     gap: 10,
   };
 
   const buttonStyle = {
-    background: isEngineer ? "#8f6cd9" : "#d1b3ff",
+    background: "#d1b3ff",
     border: "none",
     borderRadius: 12,
     height: 50,
@@ -227,45 +277,53 @@ function Calculator() {
     fontWeight: 600,
     boxShadow: "2px 2px 6px rgba(0,0,0,0.2)",
     cursor: "pointer",
+    userSelect: "none",
   };
+
+  const buttons = engineerMode ? buttonsEngineer : buttonsSimple;
 
   return (
     <div style={containerStyle}>
       <div style={calcStyle}>
         <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
 
-        {/* Display */}
-        <div style={displayStyle}>{display}</div>
-
-        {/* Buttons delete and toggle */}
+        {/* Display + Инж/Обч + Удаление */}
         <div style={controlRowStyle}>
+          <button
+            style={toggleModeButtonStyle}
+            onClick={() => setEngineerMode((v) => !v)}
+            aria-label="Переключить режим"
+          >
+            {engineerMode ? "Инж" : "Обч"}
+          </button>
+
+          <div style={displayStyle}>{display}</div>
+
           <button
             style={deleteButtonStyle}
             onClick={() =>
               setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
             }
+            aria-label="Удалить последний символ"
           >
             ⌫
           </button>
-
-          <button
-            style={toggleButtonStyle}
-            onClick={() => setIsEngineer(!isEngineer)}
-          >
-            {isEngineer ? "Обч" : "Инж"}
-          </button>
         </div>
 
-        {/* Line */}
+        {/* Линия */}
         <hr style={{ border: "1px solid #aaa", marginBottom: 16 }} />
 
-        {/* Buttons */}
+        {/* Кнопки */}
         <div style={gridStyle}>
-          {(isEngineer ? buttonsEngineer : buttonsSimple).map((b, i) => (
-            <button key={i} onClick={() => onClick(b)} style={buttonStyle}>
-              {b}
-            </button>
-          ))}
+          {buttons.map((b, i) =>
+            b ? (
+              <button key={i} onClick={() => onClick(b)} style={buttonStyle}>
+                {b}
+              </button>
+            ) : (
+              <div key={i} />
+            )
+          )}
         </div>
       </div>
     </div>
