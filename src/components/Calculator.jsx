@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const normalButtons = [
+const buttonsSimple = [
   "C",
   "()",
   "%",
@@ -23,45 +23,44 @@ const normalButtons = [
   "=",
 ];
 
-const engineerButtons = [
-  "↺",
+const buttonsEngineer = [
+  "←",
   "Rad",
   "√",
   "C",
   "sin",
   "cos",
   "tan",
-  "7",
+  "()",
   "ln",
   "log",
   "1/x",
-  "8",
+  "%",
   "eˣ",
   "x²",
   "xʸ",
-  "9",
+  "÷",
   "|x|",
   "π",
   "e",
-  "+/−",
-  "4",
-  "5",
-  "6",
-  "÷",
-  "1",
-  "2",
-  "3",
   "×",
+  "",
+  "",
+  "",
+  "−",
+  "",
+  "",
+  "",
+  "+",
+  "+/−",
   "0",
   ".",
-  ",",
-  "−",
   "=",
 ];
 
 function Calculator() {
   const [display, setDisplay] = useState("0");
-  const [engineerMode, setEngineerMode] = useState(false);
+  const [isEngineer, setIsEngineer] = useState(false);
 
   const isValidChar = (ch) => /^[0-9+\-*/().e%]$/.test(ch) || ch === "E";
 
@@ -85,7 +84,8 @@ function Calculator() {
       return;
     }
 
-    if (val === "↺") {
+    if (val === "←") {
+      // удаление по 1 символу
       setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)));
       return;
     }
@@ -166,7 +166,8 @@ function Calculator() {
     padding: "24px",
     borderRadius: "16px",
     boxShadow: "0px 0px 20px rgba(0,0,0,0.3)",
-    width: 320,
+    width: isEngineer ? 480 : 320,
+    transition: "width 0.3s",
   };
 
   const displayStyle = {
@@ -182,18 +183,6 @@ function Calculator() {
     fontFamily: "'Courier New', monospace",
   };
 
-  const modeButtonStyle = {
-    background: engineerMode ? "#ffae1f" : "#ffe07a",
-    border: "none",
-    borderRadius: 12,
-    height: 40,
-    fontSize: 16,
-    fontWeight: "bold",
-    cursor: "pointer",
-    marginBottom: 12,
-    width: "100%",
-  };
-
   const deleteButtonStyle = {
     background: "#ffb3b3",
     border: "none",
@@ -203,18 +192,34 @@ function Calculator() {
     fontSize: 20,
     fontWeight: "bold",
     cursor: "pointer",
-    marginLeft: "auto",
+    marginLeft: 10,
+  };
+
+  const toggleButtonStyle = {
+    background: "#ffdf75",
+    border: "none",
+    borderRadius: 12,
+    height: 40,
+    width: 60,
+    fontSize: 16,
+    fontWeight: "bold",
+    cursor: "pointer",
+  };
+
+  const controlRowStyle = {
+    display: "flex",
+    justifyContent: "flex-end",
     marginBottom: 10,
   };
 
   const gridStyle = {
     display: "grid",
-    gridTemplateColumns: engineerMode ? "repeat(4, 1fr)" : "repeat(4, 1fr)",
+    gridTemplateColumns: isEngineer ? "repeat(6, 1fr)" : "repeat(4, 1fr)",
     gap: 10,
   };
 
   const buttonStyle = {
-    background: engineerMode ? "#a890d6" : "#d1b3ff",
+    background: isEngineer ? "#8f6cd9" : "#d1b3ff",
     border: "none",
     borderRadius: 12,
     height: 50,
@@ -227,32 +232,27 @@ function Calculator() {
   return (
     <div style={containerStyle}>
       <div style={calcStyle}>
-        <div style={{ color: "#fff", marginBottom: 6, fontWeight: "bold" }}>
-          Калькулятор
-        </div>
-
-        {/* Переключатель режима */}
-        <button
-          style={modeButtonStyle}
-          onClick={() => setEngineerMode((m) => !m)}
-          title="Переключиться между обычным и инженерным режимом"
-        >
-          {engineerMode ? "Инженерный режим" : "Обычный режим"}
-        </button>
+        <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
 
         {/* Display */}
         <div style={displayStyle}>{display}</div>
 
-        {/* Delete one symbol */}
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        {/* Buttons delete and toggle */}
+        <div style={controlRowStyle}>
           <button
             style={deleteButtonStyle}
             onClick={() =>
               setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
             }
-            title="Удалить один символ"
           >
             ⌫
+          </button>
+
+          <button
+            style={toggleButtonStyle}
+            onClick={() => setIsEngineer(!isEngineer)}
+          >
+            {isEngineer ? "Обч" : "Инж"}
           </button>
         </div>
 
@@ -261,7 +261,7 @@ function Calculator() {
 
         {/* Buttons */}
         <div style={gridStyle}>
-          {(engineerMode ? engineerButtons : normalButtons).map((b, i) => (
+          {(isEngineer ? buttonsEngineer : buttonsSimple).map((b, i) => (
             <button key={i} onClick={() => onClick(b)} style={buttonStyle}>
               {b}
             </button>
