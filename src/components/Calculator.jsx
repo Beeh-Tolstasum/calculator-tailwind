@@ -120,10 +120,7 @@ function Calculator() {
   // Стиль кнопок под стекло с 3D и наклоном влево и немного вверх
   const glassButtonStyle = {
     background: "rgba(255, 255, 255, 0.25)",
-    boxShadow: `
-      4px 4px 8px rgba(0,0,0,0.2), 
-      -4px -4px 8px rgba(255,255,255,0.7)
-    `,
+    boxShadow: `4px 4px 8px rgba(0,0,0,0.2), -4px -4px 8px rgba(255,255,255,0.7)`,
     backdropFilter: "blur(10px)",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.3)",
@@ -135,6 +132,9 @@ function Calculator() {
     height: "56px",
     cursor: "pointer",
     userSelect: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   };
 
   const clearButtonStyle = {
@@ -143,7 +143,8 @@ function Calculator() {
     color: "white",
     border: "1px solid rgba(255,255,255,0.6)",
     fontWeight: "700",
-    // height: "56px", // Используем такую же высоту
+    height: "56px", // теперь такая же высота
+    padding: "0", // убираем лишние паддинги, чтобы высота была точной
   };
 
   return (
