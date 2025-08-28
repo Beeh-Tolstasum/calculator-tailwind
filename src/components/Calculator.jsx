@@ -24,14 +24,38 @@ const buttonsSimple = [
 ];
 
 const buttonsEngineer = [
-  "⇄", "Rad", "√", "C",
-  "sin", "cos", "tan", "()",
-  "ln", "log", "1/x", "%",
-  "eˣ", "x²", "xʸ", "÷",
-  "|x|", "π", "e", "×",
-  "", "", "+/−", "−",
-  "", "", "0", "+",
-  "", "", ",", "=",
+  "⇄",
+  "Rad",
+  "√",
+  "C",
+  "sin",
+  "cos",
+  "tan",
+  "()",
+  "ln",
+  "log",
+  "1/x",
+  "%",
+  "eˣ",
+  "x²",
+  "xʸ",
+  "÷",
+  "|x|",
+  "π",
+  "e",
+  "×",
+  "",
+  "",
+  "+/−",
+  "−",
+  "",
+  "",
+  "0",
+  "+",
+  "",
+  "",
+  ",",
+  "=",
 ];
 
 function Calculator() {
@@ -57,21 +81,36 @@ function Calculator() {
       setDisplay((d) => (d === "0" ? "()" : d + "()"));
       return;
     }
-    if (val === "⇄") {
-      // Здесь можно добавить функционал переключения направления, пока пропустим
-      return;
-    }
+    if (val === "⇄") return;
+
     if (val === "+/−") {
-      // Переключение знака последнего числа
       setDisplay((d) => {
-        // Простая реализация
         if (d === "0") return d;
         if (d.startsWith("-")) return d.slice(1);
         return "-" + d;
       });
       return;
     }
-    if (!isValidChar(val) && val !== "=" && val !== "," && val !== "Rad" && val !== "sin" && val !== "cos" && val !== "tan" && val !== "ln" && val !== "log" && val !== "1/x" && val !== "eˣ" && val !== "x²" && val !== "xʸ" && val !== "|x|" && val !== "π" && val !== "e") return;
+
+    if (
+      !isValidChar(val) &&
+      val !== "=" &&
+      val !== "," &&
+      val !== "Rad" &&
+      val !== "sin" &&
+      val !== "cos" &&
+      val !== "tan" &&
+      val !== "ln" &&
+      val !== "log" &&
+      val !== "1/x" &&
+      val !== "eˣ" &&
+      val !== "x²" &&
+      val !== "xʸ" &&
+      val !== "|x|" &&
+      val !== "π" &&
+      val !== "e"
+    )
+      return;
 
     if (val === "=") {
       try {
@@ -87,7 +126,7 @@ function Calculator() {
           setDisplay("0");
           return;
         }
-        // Для простоты используем eval, можно заменить на mathjs или Function
+
         // eslint-disable-next-line no-eval
         const result = eval(expr);
         setDisplay(String(result));
@@ -116,7 +155,6 @@ function Calculator() {
     }
 
     if (val === ",") {
-      // Запретить ввод нескольких запятых в числе
       const parts = display.split(/[+\-*/]/);
       const lastPart = parts[parts.length - 1];
       if (lastPart.includes(",")) return;
@@ -124,7 +162,6 @@ function Calculator() {
       return;
     }
 
-    // Пример обработки инженерных кнопок, можно доработать
     if (engineerMode) {
       if (val === "π") {
         setDisplay((d) => (d === "0" ? String(Math.PI) : d + String(Math.PI)));
@@ -134,7 +171,6 @@ function Calculator() {
         setDisplay((d) => (d === "0" ? String(Math.E) : d + String(Math.E)));
         return;
       }
-      // Другие функции пока не обрабатываем
     }
 
     setDisplay((d) => (d === "0" ? val : d + val));
@@ -158,6 +194,7 @@ function Calculator() {
     return () => window.removeEventListener("keydown", handler);
   }, [display, engineerMode]);
 
+  // Styles
   const containerStyle = {
     minHeight: "100vh",
     display: "flex",
@@ -189,13 +226,6 @@ function Calculator() {
     flexGrow: 1,
   };
 
-  const controlRowStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  };
-
   const deleteButtonStyle = {
     background: "#ffb3b3",
     border: "none",
@@ -216,7 +246,6 @@ function Calculator() {
     fontSize: 16,
     fontWeight: "bold",
     cursor: "pointer",
-    marginLeft: 8,
     color: "#000",
   };
 
@@ -245,8 +274,13 @@ function Calculator() {
       <div style={calcStyle}>
         <div style={{ color: "#fff", marginBottom: 6 }}>Калькулятор</div>
 
-        {/* Display + Инж/Обч + Удаление */}
-        <div style={controlRowStyle}>
+        {/* Дисплей */}
+        <div style={displayStyle}>{display}</div>
+
+        {/* Кнопки переключения режима и удаления */}
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}
+        >
           <button
             style={toggleModeButtonStyle}
             onClick={() => setEngineerMode((v) => !v)}
@@ -255,10 +289,8 @@ function Calculator() {
             {engineerMode ? "Инж" : "Обч"}
           </button>
 
-          <div style={displayStyle}>{display}</div>
-
           <button
-            style={deleteButtonStyle}
+            style={{ ...deleteButtonStyle, marginLeft: 8 }}
             onClick={() =>
               setDisplay((d) => (d.length <= 1 ? "0" : d.slice(0, -1)))
             }
@@ -268,10 +300,10 @@ function Calculator() {
           </button>
         </div>
 
-        {/* Линия */}
-        <hr style={{ border: "1px solid #aaa", marginBottom: 16 }} />
+        {/* Разделительная линия */}
+        <hr style={{ border: "2px solid #000", margin: "16px 0" }} />
 
-        {/* Кнопки */}
+        {/* Сетка кнопок */}
         <div style={gridStyle}>
           {buttons.map((b, i) =>
             b ? (
