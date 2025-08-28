@@ -119,7 +119,7 @@ function Calculator() {
       try {
         // Спец. кейс для "8977"
         if (display === "8977") {
-          setDisplay("Hello Beeh Tolstasum");
+          setDisplay("Hello Beeh");
           return;
         }
 
@@ -231,7 +231,7 @@ function Calculator() {
     marginBottom: 8,
     fontFamily: "'Courier New', monospace",
     flexGrow: 1,
-    overflowX: "auto",
+    overflowX: "hidden", // скрываем полосы прокрутки
   };
 
   const deleteButtonStyle = {
@@ -275,7 +275,7 @@ function Calculator() {
     userSelect: "none",
   };
 
-  const clearButtonStyle = {
+  ButtonStyle = {
     ...buttonStyle,
     background: "#ff4d4d",
     color: "#fff",
